@@ -10,11 +10,11 @@
 
 Elf64_Ehdr	*get_elf_hearder(int fd, int page_size)
 {
-	Elf64_Ehdr	*map = (Elf64_Ehdr	*)mmap(NULL, page_size, PROT_READ, MAP_PRIVATE, fd, 0);
+	Elf64_Ehdr	*map = (Elf64_Ehdr *)mmap(NULL, page_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	if (map == MAP_FAILED)
 		return (NULL);
 
-	Elf64_Ehdr	*ptr = malloc((map->e_ehsize) * sizeof(Elf64_Ehdr));
+	Elf64_Ehdr	*ptr = malloc(map->e_ehsize);
 	if (!ptr)
 		return (NULL);
 
@@ -36,7 +36,7 @@ Elf64_Shdr	*get_section_header(int fd, Elf64_Ehdr *elfHeader, int page_size)
 	if (map == MAP_FAILED)
 		return (NULL);
 
-	Elf64_Shdr	*ptr = malloc((elfHeader->e_shentsize * elfHeader->e_shnum) * sizeof(Elf64_Shdr));
+	Elf64_Shdr	*ptr = malloc(elfHeader->e_shentsize * elfHeader->e_shnum);
 	if (!ptr)
 		return (NULL);
 
@@ -74,21 +74,40 @@ char	*get_section_by_name(int fd, const char *str, Elf64_Shdr *sectionHeader, ch
 	int i = 1;
 	char *ptr;
 
-	while (shstrtab + sectionHeader[i].sh_name  && i < shnum)
+	while (i < shnum)
 	{
-		if (!ft_strncmp(str, shstrtab + sectionHeader[i].sh_name + 1, ft_strlen(str)) && ft_strlen(str) == ft_strlen(shstrtab + sectionHeader[i].sh_name + 1))
+		if (!ft_strncmp(str, shstrtab + sectionHeader[i].sh_name + 1, ft_strlen(str)) 
+			&& ft_strlen(str) == ft_strlen(shstrtab + sectionHeader[i].sh_name + 1))
 			break ;
 		i++;
 	}
 	if (i == shnum)
 	{
-		printf(("Section not found\n"));
+		printf("Section not found : %s\n", str);
 		return (NULL);
 	}
 	ptr = get_mapped_and_copied(fd, &sectionHeader[i], page_size);
 	return (ptr);
 }
 
+Elf64_Shdr	*get_section_header_by_name(const char *str, Elf64_Shdr	*sectionHeader, char *shstrtab, int shnum)
+{
+	int i = 1;
+
+	while (i < shnum)
+	{
+		if (!ft_strncmp(str, shstrtab + sectionHeader[i].sh_name + 1, ft_strlen(str)) 
+			&& ft_strlen(str) == ft_strlen(shstrtab + sectionHeader[i].sh_name + 1))
+			break ;
+		i++;
+	}
+	if (i == shnum)
+	{
+		printf("Section Header not found : %s\n", str);
+		return (NULL);
+	}
+	return (&sectionHeader[i]);
+}
 
 int main(void)
 {
@@ -108,13 +127,37 @@ int main(void)
 
 	char	*shstrtab = get_mapped_and_copied(fd, &sectionHeader[elfHeader->e_shstrndx], page_size);
 
-	char	*symtab = get_section_by_name(fd, "symtab", sectionHeader, shstrtab, page_size, elfHeader->e_shnum);
+	Elf64_Sym	*symtab = (Elf64_Sym *)get_section_by_name(fd, "symtab", sectionHeader, shstrtab, page_size, elfHeader->e_shnum);
 
+	Elf64_Shdr	*symtabHeader = get_section_header_by_name("symtab", sectionHeader, shstrtab, elfHeader->e_shnum);
+
+	Elf64_Sym	*dynsym = (Elf64_Sym *)get_section_by_name(fd, "dynsym", sectionHeader, shstrtab, page_size, elfHeader->e_shnum);
+
+	Elf64_Shdr	*dynsymHeader = get_section_header_by_name("dynsym", sectionHeader, shstrtab, elfHeader->e_shnum);
+
+	char	*strtab = get_section_by_name(fd, "strtab", sectionHeader, shstrtab, page_size, elfHeader->e_shnum);
+
+	char	*dynstr = get_section_by_name(fd, "dynstr", sectionHeader, shstrtab, page_size, elfHeader->e_shnum);
+
+	for (int i = 0; i < symtabHeader->sh_size / symtabHeader->sh_entsize; i++)
+	{
+		printf("%lx  %s\n", symtab->st_value, strtab + symtab[i].st_name);
+	}
+
+	printf("\n");
+
+	for (int i = 0; i < dynsymHeader->sh_size / dynsymHeader->sh_entsize; i++)
+	{
+		printf("%lu  %s\n", dynsym[i].st_value, dynstr + dynsym[i].st_name);
+	}
 
 	free(elfHeader);
 	free(sectionHeader);
 	free(shstrtab);
 	free(symtab);
+	free(dynsym);
+	free(strtab);
+	free(dynstr);
 
 	return (0);
 }

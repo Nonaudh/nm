@@ -1,0 +1,43 @@
+Scrt1.o
+__abi_tag OK
+crtstuff.c
+deregister_tm_clones OK
+register_tm_clones OK
+__do_global_dtors_aux OK
+completed.0 OK
+__do_global_dtors_aux_fini_array_entry OK
+frame_dummy OK
+__frame_dummy_init_array_entry OK
+hellow.c
+crtstuff.c
+__FRAME_END__ OK
+
+_DYNAMIC OK
+__GNU_EH_FRAME_HDR OK
+_GLOBAL_OFFSET_TABLE_ OK
+__libc_start_main@GLIBC_2.34 OK
+_ITM_deregisterTMCloneTable OK
+data_start OK
+puts@GLIBC_2.2.5 OK
+_edata OK
+_fini OK
+__data_start OK
+__gmon_start__ OK
+__dso_handle OK
+_IO_stdin_used OK
+_end OK
+_start OK
+__bss_start OK
+main OK
+__TMC_END__ OK
+_ITM_registerTMCloneTable OK
+__cxa_finalize@GLIBC_2.2.5 OK
+_init OK
+
+
+__libc_start_main OK BUT __libc_start_main@GLIBC_2.34
+_ITM_deregisterTMCloneTable OK
+puts OK BUT puts@GLIBC_2.2.5
+__gmon_start__ OK
+_ITM_registerTMCloneTable OK
+__cxa_finalize OK BUT __cxa_finalize@GLIBC_2.2.5
