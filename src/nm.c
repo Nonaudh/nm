@@ -128,20 +128,105 @@ void print_symbol_line(Elf64_Sym *symtab, char *name)
 	printf("%s\n", name);
 }
 
-int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf64_Shdr *dynsymHeader, Elf64_Sym *dynsym, char *dynstr)
+// int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf64_Shdr *dynsymHeader, Elf64_Sym *dynsym, char *dynstr)
+// {
+// 	for (int i = 0; i < symtabHeader->sh_size / symtabHeader->sh_entsize; i++)
+// 	{
+// 		print_symbol_line(&symtab[i], strtab + symtab[i].st_name);
+// 	}
+
+// 	printf("\n");
+
+// 	// for (int i = 0; i < dynsymHeader->sh_size / dynsymHeader->sh_entsize; i++)
+// 	// {
+// 	// 	printf("%lu  %s\n", dynsym[i].st_value, dynstr + dynsym[i].st_name);
+// 	// }
+// 	return (0);
+// }
+
+void	ft_swap(char **tab_ouret, char **tab_leau)
 {
-	for (int i = 0; i < symtabHeader->sh_size / symtabHeader->sh_entsize; i++)
+	char	*tmp;
+
+	tmp = *tab_leau;
+	*tab_leau = *tab_ouret;
+	*tab_ouret = tmp;
+
+}
+
+int	ft_strcmp_underscore(char *tab_ouret, char *tab_leau)
+{
+	if (!tab_leau || !tab_ouret)
 	{
-		print_symbol_line(&symtab[i], strtab + symtab[i].st_name);
+		printf("Error : ft_strcmp_underscore\n");
+		return (0);
 	}
+	int i;
 
-	printf("\n");
+	for (; *tab_ouret && *tab_ouret == '_'; tab_ouret++)
+		;
+	for (; *tab_leau && *tab_leau == '_'; tab_leau++)
+		;
 
-	// for (int i = 0; i < dynsymHeader->sh_size / dynsymHeader->sh_entsize; i++)
-	// {
-	// 	printf("%lu  %s\n", dynsym[i].st_value, dynstr + dynsym[i].st_name);
-	// }
-	return (0);
+	char *tmp_ouret = ft_strdup(tab_ouret);
+	char *tmp_leau = ft_strdup(tab_leau);
+
+	for (int i = 0; tmp_ouret[i]; i++)
+		tmp_ouret[i] = ft_tolower(tmp_ouret[i]);
+	
+	for (int i = 0; tmp_leau[i]; i++)
+		tmp_leau[i] = ft_tolower(tmp_leau[i]);	
+
+	int max = ft_strlen(tab_ouret) > ft_strlen(tab_leau) ? ft_strlen(tab_ouret) : ft_strlen(tab_leau);
+	int result = ft_strncmp(tmp_ouret, tmp_leau, max);
+	free(tmp_leau);
+	free(tmp_ouret);
+	return (result);
+}
+
+char **bubbleSort(char **tab)
+{
+	int j, k;
+
+	for (j = 1; tab[j + 1]; j++)
+	{
+		for (k = 1; tab[k + 1]; k++)
+		{
+			if (ft_strcmp_underscore(tab[k], tab[k + 1]) > 0)
+			{			
+				ft_swap(&tab[k], &tab[k + 1]);
+			}
+		}
+	}
+	return (tab);
+}
+
+void	print_tableau(char **tab)
+{
+	for (int i = 0; tab[i]; i++)
+		printf("%s\n", tab[i]);
+}
+
+char	**sort_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf64_Shdr *dynsymHeader, Elf64_Sym *dynsym, char *dynstr)
+{
+	int i, k;
+
+	char **tab = malloc((((symtabHeader->sh_size / symtabHeader->sh_entsize) + (dynsymHeader->sh_size / dynsymHeader->sh_entsize)) + 1) * sizeof(char *));
+	if (!tab)
+		return (NULL);
+	
+	for (i = 0; i < symtabHeader->sh_size / symtabHeader->sh_entsize; i++)
+		tab[i] = strtab + symtab[i].st_name;
+
+	for (k = 0; k < dynsymHeader->sh_size / dynsymHeader->sh_entsize; k++, i++)
+		tab[i] = dynstr + dynsym[k].st_name;
+
+	tab[i] = NULL;
+
+	tab = bubbleSort(tab);
+	print_tableau(tab);
+
+	return (tab);
 }
 
 int main(void)
@@ -174,7 +259,7 @@ int main(void)
 
 	char	*dynstr = get_section_by_name(fd, "dynstr", sectionHeader, shstrtab, page_size, elfHeader->e_shnum);
 
-	print_symbols(symtabHeader, symtab, strtab, dynsymHeader, dynsym, dynstr);
+	char 	**symbols = sort_symbols(symtabHeader, symtab, strtab, dynsymHeader, dynsym, dynstr);
 
 	free(elfHeader);
 	free(sectionHeader);
@@ -183,6 +268,7 @@ int main(void)
 	free(dynsym);
 	free(strtab);
 	free(dynstr);
+	free(symbols);
 
 	return (0);
 }
