@@ -24,7 +24,7 @@ DLIB = lib/libft/
 
 LIB = $(DLIB)libft.a
 
-SRC = $(DSRC)nm.c
+SRC = $(DSRC)nm.c $(DSRC)sort.c $(DSRC)utils_elf.c
 
 NAME = ft_nm
 
