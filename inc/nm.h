@@ -25,4 +25,6 @@ char	*get_section_by_header(int fd, Elf64_Shdr *sectionNameHeader, int page_size
 char	*get_section_by_name(int fd, const char *str, Elf64_Shdr *sectionHeader, char *shstrtab, int page_size, int shnum);
 Elf64_Shdr	*get_section_header_by_name(const char *str, Elf64_Shdr	*sectionHeader, char *shstrtab, int shnum);
 
+void	print_all_symbols(t_symbol_container *s);
+
 #endif

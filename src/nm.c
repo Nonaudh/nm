@@ -1,9 +1,6 @@
-// #include <sys/mman.h>
+#include <sys/mman.h>
 #include <fcntl.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <stdio.h>
-#include <string.h>
 #include "nm.h"
 
 void	print_symbol_type(Elf64_Sym *symtab)
@@ -20,9 +17,17 @@ void print_symbol_line(Elf64_Sym *symtab, char *name)
 	else
 		printf("                 ");
 
-	print_symbol_type(symtab);
+	// print_symbol_type(symtab);
 	
 	printf("%s\n", name);
+}
+
+void	print_all_symbols(t_symbol_container *s)
+{
+	for (int i = 0; i < s->size; i++)
+	{
+		print_symbol_line(s->list[i].symbol, s->list[i].name);
+	}
 }
 
 // int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf64_Shdr *dynsymHeader, Elf64_Sym *dynsym, char *dynstr)
