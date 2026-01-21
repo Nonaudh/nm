@@ -92,22 +92,19 @@ int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf
 	if (!s.list)
 		return (1);
 	
-		printf("\n-----\n");
 	for (i = 0; i < symtabHeader->sh_size / symtabHeader->sh_entsize; i++)
 	{
 
-		printf("%s\n", strtab + symtab[i].st_name);
 		if (unique_symbol(strtab + symtab[i].st_name, &s))
 		{
 			s.list[s.size].symbol = &symtab[i];
-			s.list[s					.size].name = strtab + symtab[i].st_name;
+			s.list[s.size].name = strtab + symtab[i].st_name;
 			s.size++;
 		}
 	}
 		
 	for (i = 0; i < dynsymHeader->sh_size / dynsymHeader->sh_entsize; i++)
 	{
-		printf("%s\n", dynstr + dynsym[i].st_name);
 		if (unique_symbol(dynstr + dynsym[i].st_name, &s))
 		{
 			s.list[s.size].symbol = &dynsym[i];
@@ -116,11 +113,7 @@ int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf
 		}
 	}
 
-		printf("\n----\n");
-
 	bubbleSort(s.list, s.size);
-	print_container(&s);
-	printf("\n\n");
 	print_all_symbols(&s);
 
 	return (0);

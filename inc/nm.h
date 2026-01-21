@@ -18,6 +18,15 @@ typedef struct s_symbol_container
 
 } t_symbol_container;
 
+typedef struct s_elf
+{
+	int fd;
+	int page_size;
+	Elf64_Ehdr	*elfHeader;
+	Elf64_Shdr	*sectionsHeader;
+	char	*shstrtab;
+} t_elf;
+
 int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf64_Shdr *dynsymHeader, Elf64_Sym *dynsym, char *dynstr);
 Elf64_Ehdr	*get_elf_header(int fd, int page_size);
 Elf64_Shdr	*get_sections_header(int fd, Elf64_Ehdr *elfHeader, int page_size);

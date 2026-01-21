@@ -2,6 +2,8 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include "nm.h"
+#include <string.h>
+#include <errno.h>
 
 void	print_symbol_type(Elf64_Sym *symtab)
 {
@@ -30,62 +32,88 @@ void	print_all_symbols(t_symbol_container *s)
 	}
 }
 
-// int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf64_Shdr *dynsymHeader, Elf64_Sym *dynsym, char *dynstr)
-// {
-// 	for (int i = 0; i < symtabHeader->sh_size / symtabHeader->sh_entsize; i++)
-// 	{
-// 		print_symbol_line(&symtab[i], strtab + symtab[i].st_name);
-// 	}
+int init_elf(t_elf *e, char *filename)
+{
+	e->elfHeader = NULL;
+	e->sectionsHeader = NULL;
+	e->shstrtab = NULL;
 
-// 	printf("\n");
+	e->fd = open(filename, O_RDONLY);
+	if (e->fd == -1)
+	{
+		perror(filename);
+		return (1);
+	}
 
-// 	// for (int i = 0; i < dynsymHeader->sh_size / dynsymHeader->sh_entsize; i++)
-// 	// {
-// 	// 	printf("%lu  %s\n", dynsym[i].st_value, dynstr + dynsym[i].st_name);
-// 	// }
-// 	return (0);
-// }
+	e->page_size = getpagesize();
+
+	e->elfHeader = get_elf_header(e->fd, e->page_size);
+	if (!e->elfHeader)
+		return (1);
+
+	e->sectionsHeader = get_sections_header(e->fd, e->elfHeader, e->page_size);
+	if (!e->sectionsHeader)
+		return (1);
+
+	e->shstrtab = get_section_by_header(e->fd, &e->sectionsHeader[e->elfHeader->e_shstrndx], e->page_size);
+	if (!e->shstrtab)
+		return (1);
+
+	return (0);
+}
+
+int	safe_exit(t_elf	*e)
+{
+	if (e->fd != -1)
+		close (e->fd);	
+	if (e->elfHeader)
+		free(e->elfHeader);
+	if (e->sectionsHeader)
+		free(e->sectionsHeader);
+	if (e->shstrtab)
+		free(e->shstrtab);
+	return (1);
+}
+
+int	nm(t_elf *e)
+{
+	
+}
+
 
 int main(int argc, char **argv)
 {
-	int fd = open(argv[1], O_RDONLY);
-	if (fd == -1)
+	if (argc != 2)
 		return (1);
 
-	int page_size = getpagesize();
+	t_elf	e;
 
-	Elf64_Ehdr	*elfHeader = get_elf_header(fd, page_size);
-	if (!elfHeader)
-		return (1);
+	if (init_elf(&e, argv[1]))
+		return (safe_exit(&e));
 
-	Elf64_Shdr	*sectionHeader = get_sections_header(fd, elfHeader, page_size);
-	if (!sectionHeader)
-		return (1);
+	nm(&e);
 
-	char	*shstrtab = get_section_by_header(fd, 
-		&sectionHeader[swap16(elfHeader->e_shstrndx)], page_size);
+	Elf64_Shdr	*symtabHeader = get_section_header_by_name("symtab", e.sectionsHeader, e.shstrtab, e.elfHeader->e_shnum);
 
-	Elf64_Shdr	*symtabHeader = get_section_header_by_name("symtab", sectionHeader, shstrtab, elfHeader->e_shnum);
+	Elf64_Sym	*symtab = (Elf64_Sym *)get_section_by_header(e.fd, symtabHeader, e.elfHeader->e_shnum);
 
-	Elf64_Sym	*symtab = (Elf64_Sym *)get_section_by_header(fd, symtabHeader, page_size);
+	// Elf64_Shdr	*dynsymHeader = get_section_header_by_name("dynsym", sectionsHeader, shstrtab, elfHeader->e_shnum);
 
-	Elf64_Shdr	*dynsymHeader = get_section_header_by_name("dynsym", sectionHeader, shstrtab, elfHeader->e_shnum);
+	// Elf64_Sym	*dynsym = (Elf64_Sym *)get_section_by_header(fd, dynsymHeader, page_size);
 
-	Elf64_Sym	*dynsym = (Elf64_Sym *)get_section_by_header(fd, dynsymHeader, page_size);
+	// char	*strtab = get_section_by_name(fd, "strtab", sectionsHeader, shstrtab, page_size, elfHeader->e_shnum);
 
-	char	*strtab = get_section_by_name(fd, "strtab", sectionHeader, shstrtab, page_size, elfHeader->e_shnum);
+	// char	*dynstr = get_section_by_name(fd, "dynstr", sectionsHeader, shstrtab, page_size, elfHeader->e_shnum);
 
-	char	*dynstr = get_section_by_name(fd, "dynstr", sectionHeader, shstrtab, page_size, elfHeader->e_shnum);
+	// print_symbols(symtabHeader, symtab, strtab, dynsymHeader, dynsym, dynstr);
 
-	print_symbols(symtabHeader, symtab, strtab, dynsymHeader, dynsym, dynstr);
-
-	free(elfHeader);
-	free(sectionHeader);
-	free(shstrtab);
-	free(symtab);
-	free(dynsym);
-	free(strtab);
-	free(dynstr);
+	// free(elfHeader);
+	// free(sectionsHeader);
+	// free(shstrtab);
+	// free(symtab);
+	// free(dynsym);
+	// free(strtab);
+	// free(dynstr);
 
 	return (0);
 }
