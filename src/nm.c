@@ -46,15 +46,15 @@ void	print_all_symbols(t_symbol_container *s)
 // 	return (0);
 // }
 
-int main(void)
+int main(int argc, char **argv)
 {
-	int fd = open("a.out", O_RDONLY);
+	int fd = open(argv[1], O_RDONLY);
 	if (fd == -1)
 		return (1);
 
 	int page_size = getpagesize();
 
-	Elf64_Ehdr	*elfHeader = get_elf_hearder(fd, page_size);
+	Elf64_Ehdr	*elfHeader = get_elf_header(fd, page_size);
 	if (!elfHeader)
 		return (1);
 
@@ -62,7 +62,8 @@ int main(void)
 	if (!sectionHeader)
 		return (1);
 
-	char	*shstrtab = get_section_by_header(fd, &sectionHeader[elfHeader->e_shstrndx], page_size);
+	char	*shstrtab = get_section_by_header(fd, 
+		&sectionHeader[swap16(elfHeader->e_shstrndx)], page_size);
 
 	Elf64_Shdr	*symtabHeader = get_section_header_by_name("symtab", sectionHeader, shstrtab, elfHeader->e_shnum);
 

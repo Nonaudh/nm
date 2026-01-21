@@ -1,0 +1,6 @@
+binary-samples/
+nm_tester/
+*.o
+*.a
+*.so
+ft_nm

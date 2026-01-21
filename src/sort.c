@@ -100,7 +100,7 @@ int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf
 		if (unique_symbol(strtab + symtab[i].st_name, &s))
 		{
 			s.list[s.size].symbol = &symtab[i];
-			s.list[s.size].name = strtab + symtab[i].st_name;
+			s.list[s					.size].name = strtab + symtab[i].st_name;
 			s.size++;
 		}
 	}

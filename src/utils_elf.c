@@ -2,7 +2,7 @@
 #include <sys/mman.h>
 #include <stdio.h>
 
-Elf64_Ehdr	*get_elf_hearder(int fd, int page_size)
+Elf64_Ehdr	*get_elf_header(int fd, int page_size)
 {
 	Elf64_Ehdr	*map = (Elf64_Ehdr *)mmap(NULL, page_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	if (map == MAP_FAILED)
@@ -21,6 +21,10 @@ Elf64_Ehdr	*get_elf_hearder(int fd, int page_size)
 
 Elf64_Shdr	*get_sections_header(int fd, Elf64_Ehdr *elfHeader, int page_size)
 {
+	elfHeader->e_shoff = swap64(elfHeader->e_shoff);
+	elfHeader->e_shentsize  = swap16(elfHeader->e_shentsize);
+	elfHeader->e_shnum = swap16(elfHeader->e_shnum);
+
 	int	aligned = elfHeader->e_shoff - (elfHeader->e_shoff % page_size);
 
 	int delta = elfHeader->e_shoff - aligned;
@@ -43,6 +47,11 @@ Elf64_Shdr	*get_sections_header(int fd, Elf64_Ehdr *elfHeader, int page_size)
 
 char	*get_section_by_header(int fd, Elf64_Shdr *sectionNameHeader, int page_size)
 {
+	if (!sectionNameHeader)
+		return (NULL);
+	sectionNameHeader->sh_offset = swap64(sectionNameHeader->sh_offset);
+	sectionNameHeader->sh_size = swap64(sectionNameHeader->sh_size);
+
 	int	aligned = sectionNameHeader->sh_offset - (sectionNameHeader->sh_offset % page_size);
 
 	int delta = sectionNameHeader->sh_offset - aligned;
@@ -90,6 +99,8 @@ Elf64_Shdr	*get_section_header_by_name(const char *str, Elf64_Shdr	*sectionHeade
 
 	while (i < shnum)
 	{
+		sectionHeader[i].sh_name = sectionHeader[i].sh_name;
+		printf("%s\n", shstrtab + sectionHeader[i].sh_name + 1);
 		if (!ft_strncmp(str, shstrtab + sectionHeader[i].sh_name + 1, ft_strlen(str)) 
 			&& ft_strlen(str) == ft_strlen(shstrtab + sectionHeader[i].sh_name + 1))
 			break ;
