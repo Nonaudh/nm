@@ -4,6 +4,7 @@
 #include "nm.h"
 #include <string.h>
 #include <errno.h>
+#include <sys/stat.h>
 
 void	print_symbol_type(Elf64_Sym *symtab)
 {
@@ -28,8 +29,25 @@ void	print_all_symbols(t_symbol_container *s)
 {
 	for (int i = 0; i < s->size; i++)
 	{
-		print_symbol_line(s->list[i].symbol, s->list[i].name);
+		print_symbol_line(s->tab[i].symbol, s->tab[i].name);
 	}
+}
+
+int	cant_read_file(int fd)
+{
+	struct stat stat;
+
+	if (fstat(fd, &stat))
+	{
+		ft_putstr_fd("Error: fsat\n", 2);
+		return (1);
+	}
+	if (stat.st_size < EI_NIDENT)
+	{
+		ft_putstr_fd("File too small\n", 2);
+		return (1);
+	}
+	return (0);
 }
 
 int init_elf(t_elf *e, char *filename)
@@ -45,6 +63,9 @@ int init_elf(t_elf *e, char *filename)
 		return (1);
 	}
 
+	if (cant_read_file(e->fd))
+		return (1);
+
 	e->page_size = getpagesize();
 
 	e->elfHeader = get_elf_header(e->fd, e->page_size);
@@ -55,7 +76,7 @@ int init_elf(t_elf *e, char *filename)
 	if (!e->sectionsHeader)
 		return (1);
 
-	e->shstrtab = get_section_by_header(e->fd, &e->sectionsHeader[e->elfHeader->e_shstrndx], e->page_size);
+	e->shstrtab = get_section_by_header(e, &e->sectionsHeader[e->elfHeader->e_shstrndx]);
 	if (!e->shstrtab)
 		return (1);
 
@@ -77,7 +98,19 @@ int	safe_exit(t_elf	*e)
 
 int	nm(t_elf *e)
 {
-	
+	Elf64_Shdr	*symtabHeader = get_section_header_by_name(e, "symtab");
+
+	Elf64_Sym	*symtab = (Elf64_Sym *)get_section_by_header(e, symtabHeader);
+
+	Elf64_Shdr	*dynsymHeader = get_section_header_by_name(e, "dynsym");
+
+	Elf64_Sym	*dynsym = (Elf64_Sym *)get_section_by_header(e, dynsymHeader);
+
+	char	*strtab = get_section_by_name(e, "strtab");
+
+	char	*dynstr = get_section_by_name(e, "dynstr");
+
+	print_symbols(symtabHeader, symtab, strtab, dynsymHeader, dynsym, dynstr);
 }
 
 
@@ -88,14 +121,14 @@ int main(int argc, char **argv)
 
 	t_elf	e;
 
-	if (init_elf(&e, argv[1]))
+	if (init_elf(&e, argv[argc - 1]))
 		return (safe_exit(&e));
 
 	nm(&e);
 
-	Elf64_Shdr	*symtabHeader = get_section_header_by_name("symtab", e.sectionsHeader, e.shstrtab, e.elfHeader->e_shnum);
+	// Elf64_Shdr	*symtabHeader = get_section_header_by_name("symtab", e.sectionsHeader, e.shstrtab, e.elfHeader->e_shnum);
 
-	Elf64_Sym	*symtab = (Elf64_Sym *)get_section_by_header(e.fd, symtabHeader, e.elfHeader->e_shnum);
+	// Elf64_Sym	*symtab = (Elf64_Sym *)get_section_by_header(e.fd, symtabHeader, e.elfHeader->e_shnum);
 
 	// Elf64_Shdr	*dynsymHeader = get_section_header_by_name("dynsym", sectionsHeader, shstrtab, elfHeader->e_shnum);
 
@@ -114,6 +147,7 @@ int main(int argc, char **argv)
 	// free(dynsym);
 	// free(strtab);
 	// free(dynstr);
+	safe_exit(&e);
 
 	return (0);
 }

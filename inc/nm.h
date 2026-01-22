@@ -13,7 +13,7 @@ typedef struct s_symbol
 
 typedef struct s_symbol_container
 {
-	t_symbol *list;
+	t_symbol *tab;
 	size_t size;
 
 } t_symbol_container;
@@ -23,16 +23,19 @@ typedef struct s_elf
 	int fd;
 	int page_size;
 	Elf64_Ehdr	*elfHeader;
+	
 	Elf64_Shdr	*sectionsHeader;
 	char	*shstrtab;
 } t_elf;
 
 int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf64_Shdr *dynsymHeader, Elf64_Sym *dynsym, char *dynstr);
+
 Elf64_Ehdr	*get_elf_header(int fd, int page_size);
 Elf64_Shdr	*get_sections_header(int fd, Elf64_Ehdr *elfHeader, int page_size);
-char	*get_section_by_header(int fd, Elf64_Shdr *sectionNameHeader, int page_size);
-char	*get_section_by_name(int fd, const char *str, Elf64_Shdr *sectionHeader, char *shstrtab, int page_size, int shnum);
-Elf64_Shdr	*get_section_header_by_name(const char *str, Elf64_Shdr	*sectionHeader, char *shstrtab, int shnum);
+
+char	*get_section_by_header(t_elf *e, Elf64_Shdr *sectionHeader);
+char	*get_section_by_name(t_elf *e, const char *name);
+Elf64_Shdr	*get_section_header_by_name(t_elf *e, const char *name);
 
 void	print_all_symbols(t_symbol_container *s);
 

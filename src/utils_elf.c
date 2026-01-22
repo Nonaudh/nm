@@ -1,18 +1,33 @@
 #include "nm.h"
 #include <sys/mman.h>
 #include <stdio.h>
+	
+int	not_an_elf(char *map)
+{
+	if (map[0] != 0x7f || map[1] != 'E' || map[2] != 'L' || map[3] != 'F')
+	{
+		ft_putstr_fd("Not an ELF\n", 2);
+		return (1);
+	}
+	return (0);
+}
 
 Elf64_Ehdr	*get_elf_header(int fd, int page_size)
 {
-	Elf64_Ehdr	*map = (Elf64_Ehdr *)mmap(NULL, page_size, PROT_READ, MAP_PRIVATE, fd, 0);
+	char	*map = mmap(NULL, page_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	if (map == MAP_FAILED)
 		return (NULL);
 
-	Elf64_Ehdr	*ptr = malloc(map->e_ehsize);
+	if (not_an_elf(map))
+		return (NULL);
+
+	Elf64_Ehdr	*elf = (Elf64_Ehdr	*)map;
+
+	Elf64_Ehdr	*ptr = malloc(elf->e_ehsize);
 	if (!ptr)
 		return (NULL);
 
-	ft_memcpy(ptr, map, map->e_ehsize);
+	ft_memcpy(ptr, map, elf->e_ehsize);
 
 	if (munmap(map, page_size))
 		return (NULL);
@@ -41,67 +56,67 @@ Elf64_Shdr	*get_sections_header(int fd, Elf64_Ehdr *elfHeader, int page_size)
 	return (ptr);
 }
 
-char	*get_section_by_header(int fd, Elf64_Shdr *sectionNameHeader, int page_size)
+char	*get_section_by_header(t_elf *e, Elf64_Shdr *sectionHeader)
 {
-	if (!sectionNameHeader)
+	if (!sectionHeader)
 		return (NULL);
 
-	int	aligned = sectionNameHeader->sh_offset - (sectionNameHeader->sh_offset % page_size);
+	int	aligned = sectionHeader->sh_offset - (sectionHeader->sh_offset % e->page_size);
 
-	int delta = sectionNameHeader->sh_offset - aligned;
+	int delta = sectionHeader->sh_offset - aligned;
 
-	void	*map = mmap(NULL, sectionNameHeader->sh_size + delta,
-			PROT_READ, MAP_PRIVATE, fd, aligned);
+	void	*map = mmap(NULL, sectionHeader->sh_size + delta,
+			PROT_READ, MAP_PRIVATE, e->fd, aligned);
 	if (map == MAP_FAILED)
 		return (NULL);
 
-	char *ptr = malloc(sectionNameHeader->sh_size * sizeof(char));
+	char *ptr = malloc(sectionHeader->sh_size * sizeof(char));
 	if (!ptr)
 		return (NULL);
 
-	ft_memcpy(ptr, map + delta, sectionNameHeader->sh_size);
+	ft_memcpy(ptr, map + delta, sectionHeader->sh_size);
 
-	if (munmap(map, sectionNameHeader->sh_size + delta))
+	if (munmap(map, sectionHeader->sh_size + delta))
 		return (NULL);
 	return (ptr);
 }
 
-char	*get_section_by_name(int fd, const char *str, Elf64_Shdr *sectionHeader, char *shstrtab, int page_size, int shnum)
+char	*get_section_by_name(t_elf *e, const char *name)
 {
 	int i = 1;
 	char *ptr;
 
-	while (i < shnum)
+	while (i < e->elfHeader->e_shnum)
 	{
-		if (!ft_strncmp(str, shstrtab + sectionHeader[i].sh_name + 1, ft_strlen(str)) 
-			&& ft_strlen(str) == ft_strlen(shstrtab + sectionHeader[i].sh_name + 1))
+		if (!ft_strncmp(name, e->shstrtab + e->sectionsHeader[i].sh_name + 1, ft_strlen(name)) 
+			&& ft_strlen(name) == ft_strlen(e->shstrtab + e->sectionsHeader[i].sh_name + 1))
 			break ;
 		i++;
 	}
-	if (i == shnum)
+	if (i == e->elfHeader->e_shnum)
 	{
-		printf("Section not found : %s\n", str);
+		printf("Section not found : %s\n", name);
 		return (NULL);
 	}
-	ptr = get_section_by_header(fd, &sectionHeader[i], page_size);
+	ptr = get_section_by_header(e, &e->sectionsHeader[i]);
 	return (ptr);
 }
 
-Elf64_Shdr	*get_section_header_by_name(const char *str, Elf64_Shdr	*sectionHeader, char *shstrtab, int shnum)
+Elf64_Shdr	*get_section_header_by_name(t_elf *e, const char *name)
 {
 	int i = 1;
 
-	while (i < shnum)
+	while (i < e->elfHeader->e_shnum)
 	{
-		if (!ft_strncmp(str, shstrtab + sectionHeader[i].sh_name + 1, ft_strlen(str)) 
-			&& ft_strlen(str) == ft_strlen(shstrtab + sectionHeader[i].sh_name + 1))
+		if (!ft_strncmp(name, e->shstrtab + e->sectionsHeader[i].sh_name + 1, ft_strlen(name)) 
+			&& ft_strlen(name) == ft_strlen(e->shstrtab + e->sectionsHeader[i].sh_name + 1))
 			break ;
 		i++;
 	}
-	if (i == shnum)
+	if (i == e->elfHeader->e_shnum)
 	{
-		printf("Section Header not found : %s\n", str);
+		printf("Section Header not found : %s\n", name);
 		return (NULL);
 	}
-	return (&sectionHeader[i]);
+	return (&e->sectionsHeader[i]);
 }
