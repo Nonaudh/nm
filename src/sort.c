@@ -17,25 +17,32 @@ int	ft_strcmp_underscore(char *tab_ouret, char *tab_leau)
 		printf("Error : ft_strcmp_underscore\n");
 		return (0);
 	}
-	char *tmp_ouret = tab_ouret;
-	char *tmp_leau = tab_leau;
+	char *tmp_ouret = ft_strdup(tab_ouret);
+	char *tmp_leau = ft_strdup(tab_leau);
 
-	for (; *tmp_ouret && *tmp_ouret == '_'; tmp_ouret++)
+	int x, y;
+
+	for (x = 0; tmp_ouret[x] && tmp_ouret[x] == '_'; x++)
 		;
-	for (; *tmp_leau && *tmp_leau == '_'; tmp_leau++)
+	for (y = 0; tmp_leau[y] && tmp_leau[y] == '_'; y++)
 		;
 
-	for (int i = 0; tmp_ouret[i]; i++)
+	for (int i = x; tmp_ouret[i]; i++)
 		tmp_ouret[i] = ft_tolower(tmp_ouret[i]);
 	
-	for (int i = 0; tmp_leau[i]; i++)
+	for (int i = y; tmp_leau[i]; i++)
 		tmp_leau[i] = ft_tolower(tmp_leau[i]);	
 
-	int max = ft_strlen(tab_ouret) > ft_strlen(tab_leau) ? ft_strlen(tab_ouret) : ft_strlen(tab_leau);
-	int result = ft_strncmp(tmp_ouret, tmp_leau, max);
+	int max = ft_strlen(&tmp_ouret[x]) > ft_strlen(&tab_leau[y]) ? ft_strlen(&tab_ouret[x]) : ft_strlen(&tab_leau[y]);
+	int result = ft_strncmp(&tmp_ouret[x], &tmp_leau[y], max);
 
 	if (result == 0 && tab_leau[0] == '_')
 		result = 1;
+
+	if (tmp_ouret)
+		free(tmp_ouret);
+	if (tmp_leau)
+		free(tmp_leau);
 
 	return (result);
 }
@@ -82,7 +89,7 @@ void	print_container(t_symbol_container *s)
 	}
 }
 
-int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf64_Shdr *dynsymHeader, Elf64_Sym *dynsym, char *dynstr)
+int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf64_Shdr *dynsymHeader, Elf64_Sym *dynsym, char *dynstr, Elf64_Shdr *sectionsHeader)
 {
 	int i;
 	t_symbol_container	s;
@@ -114,7 +121,7 @@ int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf
 	}
 
 	bubbleSort(s.tab, s.size);
-	print_all_symbols(&s);
+	print_all_symbols(&s, sectionsHeader);
 
 	return (0);
 }

@@ -6,30 +6,77 @@
 #include <errno.h>
 #include <sys/stat.h>
 
-void	print_symbol_type(Elf64_Sym *symtab)
+void	print_symbol_type(Elf64_Sym *symtab, Elf64_Shdr *sectionsHeader)
 {
 	int	bind = ELF64_ST_BIND(symtab->st_info);
 	int	type = ELF64_ST_TYPE(symtab->st_info);
 	printf("bind ; %d  type; %d  sndx; %d  ", bind, type, symtab->st_shndx);
+
+	char c = 0;
+
+	if (symtab->st_shndx == SHN_UNDEF)
+		c = 'U';
+
+	if (symtab->st_shndx == SHN_UNDEF && bind == STB_WEAK)
+		c = 'w';
+	
+	if (symtab->st_shndx == SHN_ABS)
+		c = 'A';
+
+	if (symtab->st_shndx == SHN_COMMON)
+		c = 'C';
+
+	if (c != 0)
+	{
+		if (bind == STB_LOCAL)
+			c = ft_tolower(c);
+		printf("  %c  ", c);
+		return ;
+	}
+	
+
+	Elf64_Shdr *sec = &sectionsHeader[symtab->st_shndx];
+
+	if (sec->sh_flags & SHF_EXECINSTR)
+		c = 'T';
+	
+	else if ((sec->sh_flags & SHF_ALLOC) && (sec->sh_flags & SHF_WRITE))
+		c = 'D';
+
+	else if (sec->sh_type == SHT_NOBITS)
+		c = 'B';
+
+	else if (sec->sh_flags & SHF_ALLOC)
+		c = 'R';
+	else
+		c = 'N';
+	
+	if (bind == STB_LOCAL)
+		c = ft_tolower(c);
+
+	// if (bind == STB_WEAK)
+	// 	c
+	printf("  %c  ", c);
+	
 }
 
-void print_symbol_line(Elf64_Sym *symtab, char *name)
+void print_symbol_line(Elf64_Sym *symtab, char *name, Elf64_Shdr *sectionsHeader)
 {
 	if (symtab->st_value)
 		printf("%016lx ", symtab->st_value);
 	else
 		printf("                 ");
 
-	// print_symbol_type(symtab);
+	print_symbol_type(symtab, sectionsHeader);
 	
 	printf("%s\n", name);
 }
 
-void	print_all_symbols(t_symbol_container *s)
+void	print_all_symbols(t_symbol_container *s, Elf64_Shdr *sectionsHeader)
 {
 	for (int i = 0; i < s->size; i++)
 	{
-		print_symbol_line(s->tab[i].symbol, s->tab[i].name);
+		print_symbol_line(s->tab[i].symbol, s->tab[i].name, sectionsHeader);
 	}
 }
 
@@ -110,7 +157,9 @@ int	nm(t_elf *e)
 
 	char	*dynstr = get_section_by_name(e, "dynstr");
 
-	print_symbols(symtabHeader, symtab, strtab, dynsymHeader, dynsym, dynstr);
+	print_symbols(symtabHeader, symtab, strtab, dynsymHeader, dynsym, dynstr, e->sectionsHeader);
+
+	return (0);
 }
 
 
