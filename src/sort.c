@@ -89,7 +89,7 @@ void	print_container(t_symbol_container *s)
 	}
 }
 
-int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf64_Shdr *dynsymHeader, Elf64_Sym *dynsym, char *dynstr, Elf64_Shdr *sectionsHeader)
+int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf64_Shdr *dynsymHeader, Elf64_Sym *dynsym, char *dynstr, t_elf *e)
 {
 	int i;
 	t_symbol_container	s;
@@ -121,7 +121,7 @@ int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf
 	}
 
 	bubbleSort(s.tab, s.size);
-	print_all_symbols(&s, sectionsHeader);
+	print_all_symbols(&s, e);
 
 	return (0);
 }

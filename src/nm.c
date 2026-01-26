@@ -6,77 +6,79 @@
 #include <errno.h>
 #include <sys/stat.h>
 
-void	print_symbol_type(Elf64_Sym *symtab, Elf64_Shdr *sectionsHeader)
+char	define_symbol_type(Elf64_Sym *symtab, t_elf *e)
 {
 	int	bind = ELF64_ST_BIND(symtab->st_info);
 	int	type = ELF64_ST_TYPE(symtab->st_info);
-	printf("bind ; %d  type; %d  sndx; %d  ", bind, type, symtab->st_shndx);
-
 	char c = 0;
 
 	if (symtab->st_shndx == SHN_UNDEF)
-		c = 'U';
-
-	if (symtab->st_shndx == SHN_UNDEF && bind == STB_WEAK)
-		c = 'w';
-	
-	if (symtab->st_shndx == SHN_ABS)
-		c = 'A';
-
-	if (symtab->st_shndx == SHN_COMMON)
-		c = 'C';
-
-	if (c != 0)
 	{
-		if (bind == STB_LOCAL)
-			c = ft_tolower(c);
-		printf("  %c  ", c);
-		return ;
+		if (bind == STB_WEAK)
+			return ('w');
+		return ('U');
+	}
+
+	if (symtab->st_shndx == SHN_ABS)
+		return ('A');
+
+	if (bind == STB_WEAK)
+	{
+		if (type == STT_OBJECT)
+		{
+			if (symtab->st_shndx == SHN_UNDEF)
+				return ('v');
+			else
+				return ('V');
+		}
+		if (symtab->st_shndx == SHN_UNDEF)
+			return ('w');
+		else
+			return ('W');
+	}
+
+	Elf64_Shdr *shdr = &e->sectionsHeader[symtab->st_shndx];
+
+	if (shdr->sh_flags & SHF_EXECINSTR)
+		return ('T');
+
+	if ((shdr->sh_flags & SHF_ALLOC) &&
+			!(shdr->sh_flags & SHF_WRITE) &&
+			!(shdr->sh_flags & SHF_EXECINSTR))
+		return ('R');
+
+	if ((shdr->sh_flags & SHF_ALLOC) && (shdr->sh_flags & SHF_WRITE))
+	{
+		if (shdr->sh_type == SHT_NOBITS)
+			return ('B');
+		else
+			return ('D');
 	}
 	
-
-	Elf64_Shdr *sec = &sectionsHeader[symtab->st_shndx];
-
-	if (sec->sh_flags & SHF_EXECINSTR)
-		c = 'T';
-	
-	else if ((sec->sh_flags & SHF_ALLOC) && (sec->sh_flags & SHF_WRITE))
-		c = 'D';
-
-	else if (sec->sh_type == SHT_NOBITS)
-		c = 'B';
-
-	else if (sec->sh_flags & SHF_ALLOC)
-		c = 'R';
-	else
-		c = 'N';
-	
-	if (bind == STB_LOCAL)
-		c = ft_tolower(c);
-
-	// if (bind == STB_WEAK)
-	// 	c
-	printf("  %c  ", c);
-	
+	return ('?');
 }
 
-void print_symbol_line(Elf64_Sym *symtab, char *name, Elf64_Shdr *sectionsHeader)
+void print_symbol_line(Elf64_Sym *symtab, char *name,  t_elf *e)
 {
 	if (symtab->st_value)
-		printf("%016lx ", symtab->st_value);
+		printf("%016lx", symtab->st_value);
 	else
-		printf("                 ");
+		printf("                ");
 
-	print_symbol_type(symtab, sectionsHeader);
+	char c = define_symbol_type(symtab, e);
+	if (c != 'U' && c != 'W' && c != 'V' && ELF64_ST_BIND(symtab->st_info) == STB_LOCAL)
+		c = ft_tolower(c);
+
+	printf(" %c ", c);
 	
 	printf("%s\n", name);
 }
 
-void	print_all_symbols(t_symbol_container *s, Elf64_Shdr *sectionsHeader)
+void	print_all_symbols(t_symbol_container *s, t_elf *e)
 {
 	for (int i = 0; i < s->size; i++)
 	{
-		print_symbol_line(s->tab[i].symbol, s->tab[i].name, sectionsHeader);
+		print_symbol_line(s->tab[i].symbol, s->tab[i].name, e);
 	}
 }
 
@@ -157,7 +159,7 @@ int	nm(t_elf *e)
 
 	char	*dynstr = get_section_by_name(e, "dynstr");
 
-	print_symbols(symtabHeader, symtab, strtab, dynsymHeader, dynsym, dynstr, e->sectionsHeader);
+	print_symbols(symtabHeader, symtab, strtab, dynsymHeader, dynsym, dynstr, e);
 
 	return (0);
 }
