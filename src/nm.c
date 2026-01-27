@@ -54,7 +54,6 @@ char	define_symbol_type(Elf64_Sym *symtab, t_elf *e)
 		else
 			return ('D');
 	}
-	
 	return ('?');
 }
 
@@ -82,66 +81,33 @@ void	print_all_symbols(t_symbol_container *s, t_elf *e)
 	}
 }
 
-int	cant_read_file(int fd)
+int	size_of_file(int fd)
 {
 	struct stat stat;
 
 	if (fstat(fd, &stat))
 	{
 		ft_putstr_fd("Error: fsat\n", 2);
-		return (1);
+		return (-1);
 	}
 	if (stat.st_size < EI_NIDENT)
 	{
 		ft_putstr_fd("File too small\n", 2);
-		return (1);
+		return (-1);
 	}
-	return (0);
-}
-
-int init_elf(t_elf *e, char *filename)
-{
-	e->elfHeader = NULL;
-	e->sectionsHeader = NULL;
-	e->shstrtab = NULL;
-
-	e->fd = open(filename, O_RDONLY);
-	if (e->fd == -1)
-	{
-		perror(filename);
-		return (1);
-	}
-
-	if (cant_read_file(e->fd))
-		return (1);
-
-	e->page_size = getpagesize();
-
-	e->elfHeader = get_elf_header(e->fd, e->page_size);
-	if (!e->elfHeader)
-		return (1);
-
-	e->sectionsHeader = get_sections_header(e->fd, e->elfHeader, e->page_size);
-	if (!e->sectionsHeader)
-		return (1);
-
-	e->shstrtab = get_section_by_header(e, &e->sectionsHeader[e->elfHeader->e_shstrndx]);
-	if (!e->shstrtab)
-		return (1);
-
-	return (0);
+	return (stat.st_size);
 }
 
 int	safe_exit(t_elf	*e)
 {
 	if (e->fd != -1)
 		close (e->fd);	
-	if (e->elfHeader)
-		free(e->elfHeader);
-	if (e->sectionsHeader)
-		free(e->sectionsHeader);
-	if (e->shstrtab)
-		free(e->shstrtab);
+	if (e->file_map)
+		munmap(e->file_map, e->file_size);
+	// if (e->sectionsHeader)
+	// 	free(e->sectionsHeader);
+	// if (e->shstrtab)
+	// 	free(e->shstrtab);
 	return (1);
 }
 
@@ -164,6 +130,78 @@ int	nm(t_elf *e)
 	return (0);
 }
 
+// int init_elf(t_elf *e, char *filename)
+// {
+// 	e->elfHeader = NULL;
+// 	e->sectionsHeader = NULL;
+// 	e->shstrtab = NULL;
+
+// 	e->fd = open(filename, O_RDONLY);
+// 	if (e->fd == -1)
+// 	{
+// 		perror(filename);
+// 		return (1);
+// 	}
+
+// 	if (size_of_file(e->fd) == -1)
+// 		return (1);
+
+// 	e->page_size = getpagesize();
+
+// 	e->elfHeader = get_elf_header(e->fd, e->page_size);
+// 	if (!e->elfHeader)
+// 		return (1);
+
+// 	e->sectionsHeader = get_sections_header(e->fd, e->elfHeader, e->page_size);
+// 	if (!e->sectionsHeader)
+// 		return (1);
+
+// 	e->shstrtab = get_section_by_header(e, &e->sectionsHeader[e->elfHeader->e_shstrndx]);
+// 	if (!e->shstrtab)
+// 		return (1);
+
+// 	return (0);
+// }
+
+int	new_init_elf(t_elf *e, char *filename)
+{
+	e->elf_header = NULL;
+	e->sectionsHeader = NULL;
+	e->shstrtab = NULL;
+	e->file_map = NULL;
+
+	e->fd = open(filename, O_RDONLY);
+	if (e->fd == -1)
+	{
+		perror(filename);
+		return (1);
+	}
+
+	e->file_size = size_of_file(e->fd);
+	if (e->file_size == -1)
+		return (1);
+
+	e->page_size = getpagesize();
+
+	e->file_map = get_file_in_a_map(e->fd, e->file_size);
+	if (!e->file_map)
+		return (1);
+
+	e->elf_header = get_elf_header(e);
+	if (!e->elf_header)	
+		return (1);
+
+	e->sectionsHeader = get_sections_header(e);
+	if (!e->sectionsHeader)
+		return (1);
+
+	e->shstrtab = get_section_by_header(e, &e->sectionsHeader[e->elf_header->e_shstrndx]);
+	if (!e->shstrtab)
+		return (1);
+
+	return (0);
+}
+
 
 int main(int argc, char **argv)
 {
@@ -172,7 +210,10 @@ int main(int argc, char **argv)
 
 	t_elf	e;
 
-	if (init_elf(&e, argv[argc - 1]))
+	// if (init_elf(&e, argv[argc - 1]))
+	// 	return (safe_exit(&e));
+
+	if (new_init_elf(&e, argv[argc - 1]))
 		return (safe_exit(&e));
 
 	nm(&e);
