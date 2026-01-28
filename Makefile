@@ -18,13 +18,15 @@ INCLUDE = -Iinc -Ilib/libft
 
 LIBRARIES = -Llib/libft -lft
 
-DSRC = src/
+DSRC64 = src/64/
+
+DSRC23 = src/32/
 
 DLIB = lib/libft/
 
 LIB = $(DLIB)libft.a
 
-SRC = $(DSRC)nm.c $(DSRC)sort.c $(DSRC)utils_elf.c $(DSRC)swap.c
+SRC = src/main.c $(DSRC64)nm.c $(DSRC64)sort.c $(DSRC64)utils_elf.c $(DSRC64)print.c
 
 NAME = ft_nm
 

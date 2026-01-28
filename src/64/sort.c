@@ -1,9 +1,9 @@
-#include "nm.h"
+#include "nm64.h"
 #include <stdio.h>
 
-void	ft_swap(t_symbol *sym_biot, t_symbol *sym_phoni)
+void	ft_swap(t_symbol64 *sym_biot, t_symbol64 *sym_phoni)
 {
-	t_symbol tmp;
+	t_symbol64 tmp;
 
 	tmp = *sym_biot;
 	*sym_biot = *sym_phoni;
@@ -47,7 +47,7 @@ int	ft_strcmp_underscore(char *tab_ouret, char *tab_leau)
 	return (result);
 }
 
-void	bubbleSort(t_symbol *tab, size_t size)
+void	bubbleSort(t_symbol64 *tab, size_t size)
 {
 	int j, k;
 
@@ -63,7 +63,7 @@ void	bubbleSort(t_symbol *tab, size_t size)
 	}
 }
 
-int	unique_symbol(char *name, t_symbol_container *s)
+int	unique_symbol(char *name, t_symbol_container64 *s)
 {
 	int	i;
 
@@ -76,26 +76,26 @@ int	unique_symbol(char *name, t_symbol_container *s)
 				break ;
 		}
 	}
-	if (i == s->size)
+	if (i == s->size || ELF64_ST_TYPE(s->tab[i].symbol->st_info) == STT_FILE)
 		return (1);
 	return (0);
 }
 
-void	print_container(t_symbol_container *s)
-{
-	for (int i = 0; i < s->size; i++)
-	{
-		printf("%s\n", s->tab[i].name);
-	}
-}
+// void	print_container(t_symbol_container64 *s)
+// {
+// 	for (int i = 0; i < s->size; i++)
+// 	{
+// 		printf("%s\n", s->tab[i].name);
+// 	}
+// }
 
-int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf64_Shdr *dynsymHeader, Elf64_Sym *dynsym, char *dynstr, t_elf *e)
+int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf64_Shdr *dynsymHeader, Elf64_Sym *dynsym, char *dynstr, t_elf64 *e)
 {
 	int i;
-	t_symbol_container	s;
+	t_symbol_container64	s;
 
 	s.size = 0;
-	s.tab = malloc(((symtabHeader->sh_size / symtabHeader->sh_entsize) + (dynsymHeader->sh_size / dynsymHeader->sh_entsize)) * sizeof(t_symbol));
+	s.tab = malloc(((symtabHeader->sh_size / symtabHeader->sh_entsize) + (dynsymHeader->sh_size / dynsymHeader->sh_entsize)) * sizeof(t_symbol64));
 	if (!s.tab)
 		return (1);
 	
@@ -122,6 +122,7 @@ int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf
 
 	bubbleSort(s.tab, s.size);
 	print_all_symbols(&s, e);
+	free(s.tab);
 
 	return (0);
 }
