@@ -58,21 +58,74 @@ int	find_class(char *filename)
 	return (class);
 }
 
-int main(int argc, char **argv)
+int	fill_option_struct(char option, t_bonus *bonus)
 {
-	if (argc != 2)
-		return (1);
-
-	int elf_class = find_class(argv[argc - 1]);
-
-	if (elf_class == ELFCLASS64)
+	switch (option)
 	{
-		if (nm64(argc, argv))
+		case 'a':
+			bonus->a = 1;
+			break;
+		case 'g':
+			bonus->g = 1;
+			break;
+		case 'u':
+			bonus->u = 1;
+			break;
+		case 'r':
+			bonus->r = 1;
+			break;
+		case 'p':
+			bonus->p = 1;
+			break;
+		default:
+			ft_printf("bad option %c\n", option);
 			return (1);
 	}
-		
-	else if (elf_class == ELFCLASS32)
-		printf("elf32\n");
+	return (0);
+}
 
+int	is_an_option(char *str, t_bonus *bonus)
+{
+	int i;
+
+	for (i = 1; str[i]; i++)
+	{
+		if (fill_option_struct(str[i], bonus))
+			break ;
+	}
+	if (i != ft_strlen(str))
+		return (1);
+	return (0);
+}
+
+int main(int argc, char **argv)
+{
+	if (argc < 1)
+		return (1);
+
+	t_bonus bonus;
+	ft_bzero(&bonus, sizeof(t_bonus));
+	int elf_class;
+
+	for (int i = 1; i < argc; i++)
+	{
+		if (argv[i] && ft_strchr(argv[i], '-') == argv[i])
+		{
+			if (is_an_option(argv[i], &bonus))
+				return (1);
+		}
+		else
+		{
+			elf_class = find_class(argv[i]);
+			if (elf_class == ELFCLASS64)
+			{
+				if (nm64(argv[i], &bonus))
+					return (1);		
+				ft_bzero(&bonus, sizeof(t_bonus));
+			}
+			else if (elf_class == ELFCLASS32)
+				printf("elf32\n");
+		}		
+	}
 	return (0);
 }

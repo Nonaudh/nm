@@ -30,33 +30,45 @@ int	safe_exit(t_elf64	*e)
 	return (1);
 }
 
-int	list_symbols(t_elf64 *e)
+int	fill_symbol_struct(t_symbol_part64	*symtab, t_symbol_part64 *dynsym, t_elf64 *e)
 {
 	Elf64_Shdr	*symtabHeader = get_section_header_by_name(e, "symtab");
 	if (!symtabHeader)
 		return (1);
+	symtab->size = symtabHeader->sh_size / symtabHeader->sh_entsize;
 
-	Elf64_Sym	*symtab = (Elf64_Sym *)get_section_by_header(e, symtabHeader);
-	if (!symtab)
+	symtab->symbol = (Elf64_Sym *)get_section_by_header(e, symtabHeader);
+	if (!symtab->symbol)
+		return (1);
+	
+	symtab->strtab = get_section_by_name(e, "strtab");
+	if (!symtab->strtab)
 		return (1);
 
 	Elf64_Shdr	*dynsymHeader = get_section_header_by_name(e, "dynsym");
 	if (!dynsymHeader)
 		return (1);
+	dynsym->size = dynsymHeader->sh_size / dynsymHeader->sh_entsize;
 
-	Elf64_Sym	*dynsym = (Elf64_Sym *)get_section_by_header(e, dynsymHeader);
-	if (!dynsym)
+	dynsym->symbol = (Elf64_Sym *)get_section_by_header(e, dynsymHeader);
+	if (!dynsym->symbol)
+		return (1);
+	
+	dynsym->strtab = get_section_by_name(e, "dynstr");
+	if (!dynsym->strtab)
+		return (1);
+	return (0);
+}
+
+int	list_symbols(t_elf64 *e)
+{
+	t_symbol_part64	symtab;
+	t_symbol_part64	dynsym;
+
+	if (fill_symbol_struct(&symtab, &dynsym, e))
 		return (1);
 
-	char	*strtab = get_section_by_name(e, "strtab");
-	if (!strtab)
-		return (1);
-
-	char	*dynstr = get_section_by_name(e, "dynstr");
-	if (!dynstr)
-		return (1);
-
-	print_symbols(symtabHeader, symtab, strtab, dynsymHeader, dynsym, dynstr, e);
+	print_symbols(&symtab, &dynsym, e);
 
 	return (0);
 }
@@ -104,15 +116,16 @@ int	init_elf(t_elf64 *e, char *filename)
 }
 
 
-int nm64(int argc, char **argv)
+int nm64(char *filename, t_bonus *bonus)
 {
 	t_elf64	e;
 
-	if (init_elf(&e, argv[argc - 1]))
+	if (init_elf(&e, filename))
 		return (safe_exit(&e));
+	e.bonus = bonus;
 
 	if (list_symbols(&e))
-		ft_printf("nm: %s: no symbols\n", argv[argc - 1]);
+		ft_printf("nm: %s: no symbols\n", filename);
 
 	safe_exit(&e);
 

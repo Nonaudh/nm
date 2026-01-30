@@ -61,7 +61,7 @@ void	print_local_or_global(char c, Elf64_Sym *symtab)
 
 void	print_symbol_value(Elf64_Sym *symtab, char *name)
 {
-		if (symtab->st_value)
+		if (symtab->st_value || symtab->st_shndx == SHN_ABS || (name && !name[0]))
 		printf("%016lx", symtab->st_value);
 	else
 		printf("                ");
@@ -77,10 +77,21 @@ void print_symbol_line(Elf64_Sym *symtab, char *name,  t_elf64 *e)
 	printf("%s\n", name);
 }
 
+int	symbol_to_print(t_symbol64 *symbol, t_elf64 *e)
+{
+	if (e->bonus->u && symbol->symbol->st_value)
+		return (0);
+	// if (e->bonus->g && )
+	if (!e->bonus->a && (symbol->symbol->st_shndx == SHN_ABS || (symbol->name && !symbol->name[0])))
+		return (0);
+	return (1);
+}
+
 void	print_all_symbols(t_symbol_container64 *s, t_elf64 *e)
 {
 	for (int i = 0; i < s->size; i++)
 	{
-		print_symbol_line(s->tab[i].symbol, s->tab[i].name, e);
+		if (symbol_to_print(&s->tab[i], e))
+			print_symbol_line(s->tab[i].symbol, s->tab[i].name, e);
 	}
 }

@@ -4,6 +4,22 @@
 #include <elf.h>
 #include "libft.h"
 
+typedef struct s_bonus
+{
+	int a;
+	int g;
+	int u;
+	int r;
+	int p;
+} t_bonus;
+
+typedef struct s_symbol_part64
+{
+	Elf64_Sym	*symbol;
+	char	*strtab;
+	int	size;
+} t_symbol_part64;
+
 typedef struct s_symbol64
 {
 	Elf64_Sym *symbol;
@@ -26,9 +42,10 @@ typedef struct s_elf64
 	Elf64_Ehdr	*elf_header;
 	Elf64_Shdr	*sectionsHeader;
 	char	*shstrtab;
+	t_bonus *bonus;
 } t_elf64;
 
-int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf64_Shdr *dynsymHeader, Elf64_Sym *dynsym, char *dynstr, t_elf64 *e);
+int	print_symbols(t_symbol_part64 *symtab, t_symbol_part64 *dynsym, t_elf64 *e);
 
 void	*get_file_in_a_map(int fd, int page_size);
 Elf64_Ehdr	*get_elf_header(t_elf64 *e);
@@ -39,6 +56,6 @@ char	*get_section_by_name(t_elf64 *e, const char *name);
 Elf64_Shdr	*get_section_header_by_name(t_elf64 *e, const char *name);
 
 void	print_all_symbols(t_symbol_container64 *s, t_elf64 *e);
-int nm64(int argc, char **argv);
+int nm64(char *filename, t_bonus *bonus);
 
 #endif

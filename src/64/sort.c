@@ -81,48 +81,54 @@ int	unique_symbol(char *name, t_symbol_container64 *s)
 	return (0);
 }
 
-// void	print_container(t_symbol_container64 *s)
-// {
-// 	for (int i = 0; i < s->size; i++)
-// 	{
-// 		printf("%s\n", s->tab[i].name);
-// 	}
-// }
-
-int	print_symbols(Elf64_Shdr *symtabHeader, Elf64_Sym *symtab, char *strtab, Elf64_Shdr *dynsymHeader, Elf64_Sym *dynsym, char *dynstr, t_elf64 *e)
+t_symbol_container64	*erase_duplicate_symbol(t_symbol_part64 *symtab, t_symbol_part64 *dynsym, t_elf64 *e)
 {
 	int i;
-	t_symbol_container64	s;
-
-	s.size = 0;
-	s.tab = malloc(((symtabHeader->sh_size / symtabHeader->sh_entsize) + (dynsymHeader->sh_size / dynsymHeader->sh_entsize)) * sizeof(t_symbol64));
-	if (!s.tab)
-		return (1);
+	t_symbol_container64	*s = malloc(sizeof(t_symbol_container64));
+	if (!s)
+		return (NULL);
+	s->size = 0;
+	s->tab = malloc((symtab->size + dynsym->size) * sizeof(t_symbol64));
+	if (!s->tab)
+	{
+		free(s);
+		return (NULL);
+	}
 	
-	for (i = 0; i < symtabHeader->sh_size / symtabHeader->sh_entsize; i++)
+	for (i = 0; i < symtab->size; i++)
 	{
 
-		if (unique_symbol(strtab + symtab[i].st_name, &s))
+		if (unique_symbol(symtab->strtab + symtab->symbol[i].st_name, s))
 		{
-			s.tab[s.size].symbol = &symtab[i];
-			s.tab[s.size].name = strtab + symtab[i].st_name;
-			s.size++;
+			s->tab[s->size].symbol = &symtab->symbol[i];
+			s->tab[s->size].name = symtab->strtab + symtab->symbol[i].st_name;
+			s->size++;
 		}
 	}
 		
-	for (i = 0; i < dynsymHeader->sh_size / dynsymHeader->sh_entsize; i++)
+	for (i = 0; i < dynsym->size; i++)
 	{
-		if (unique_symbol(dynstr + dynsym[i].st_name, &s))
+		if (unique_symbol(dynsym->strtab + dynsym->symbol[i].st_name, s))
 		{
-			s.tab[s.size].symbol = &dynsym[i];
-			s.tab[s.size].name = dynstr + dynsym[i].st_name;
-			s.size++;
+			s->tab[s->size].symbol = &dynsym->symbol[i];
+			s->tab[s->size].name = dynsym->strtab + dynsym->symbol[i].st_name;
+			s->size++;
 		}
 	}
+	return (s);
+}
 
-	bubbleSort(s.tab, s.size);
-	print_all_symbols(&s, e);
-	free(s.tab);
+int	print_symbols(t_symbol_part64 *symtab, t_symbol_part64 *dynsym, t_elf64 *e)
+{
+	int i;
+	t_symbol_container64	*s = erase_duplicate_symbol(symtab, dynsym, e);
+	if (!s)
+		return (1);
+
+	bubbleSort(s->tab, s->size);
+	print_all_symbols(s, e);
+	free(s->tab);
+	free(s);
 
 	return (0);
 }
