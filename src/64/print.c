@@ -79,9 +79,10 @@ void print_symbol_line(Elf64_Sym *symtab, char *name,  t_elf64 *e)
 
 int	symbol_to_print(t_symbol64 *symbol, t_elf64 *e)
 {
-	if (e->bonus->u && symbol->symbol->st_value)
+	if (e->bonus->u && symbol->symbol->st_shndx != SHN_UNDEF && symbol->name && symbol->name[0])
 		return (0);
-	// if (e->bonus->g && )
+	if (e->bonus->g && (symbol->symbol->st_shndx != SHN_UNDEF && symbol->name && symbol->name[0] && ELF64_ST_BIND(symbol->symbol->st_info) == STB_LOCAL))
+		return (0);
 	if (!e->bonus->a && (symbol->symbol->st_shndx == SHN_ABS || (symbol->name && !symbol->name[0])))
 		return (0);
 	return (1);

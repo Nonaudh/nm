@@ -98,6 +98,20 @@ int	is_an_option(char *str, t_bonus *bonus)
 	return (0);
 }
 
+void	erase_unnecessary_bonus(t_bonus *bonus)
+{
+	if (bonus->p)
+		bonus->r = 0;
+	if (bonus->u)
+	{
+		bonus->g = 0;
+		bonus->a = 0;
+		return ;
+	}
+	if (bonus->g)
+		bonus->a = 0;
+}
+
 int main(int argc, char **argv)
 {
 	if (argc < 1)
@@ -119,6 +133,7 @@ int main(int argc, char **argv)
 			elf_class = find_class(argv[i]);
 			if (elf_class == ELFCLASS64)
 			{
+				erase_unnecessary_bonus(&bonus);
 				if (nm64(argv[i], &bonus))
 					return (1);		
 				ft_bzero(&bonus, sizeof(t_bonus));

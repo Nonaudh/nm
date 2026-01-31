@@ -47,7 +47,7 @@ int	ft_strcmp_underscore(char *tab_ouret, char *tab_leau)
 	return (result);
 }
 
-void	bubbleSort(t_symbol64 *tab, size_t size)
+void	bubbleSort(t_symbol64 *tab, size_t size, int bonus_r)
 {
 	int j, k;
 
@@ -55,10 +55,10 @@ void	bubbleSort(t_symbol64 *tab, size_t size)
 	{
 		for (k = 0; k < size - 1; k++)
 		{
-			if (ft_strcmp_underscore(tab[k].name, tab[k + 1].name) > 0)
-			{			
+			if (!bonus_r && ft_strcmp_underscore(tab[k].name, tab[k + 1].name) > 0)	
 				ft_swap(&tab[k], &tab[k + 1]);
-			}
+			else if (bonus_r && ft_strcmp_underscore(tab[k].name, tab[k + 1].name) < 0)
+				ft_swap(&tab[k], &tab[k + 1]);
 		}
 	}
 }
@@ -125,7 +125,8 @@ int	print_symbols(t_symbol_part64 *symtab, t_symbol_part64 *dynsym, t_elf64 *e)
 	if (!s)
 		return (1);
 
-	bubbleSort(s->tab, s->size);
+	if (!e->bonus->p)
+		bubbleSort(s->tab, s->size, e->bonus->r);
 	print_all_symbols(s, e);
 	free(s->tab);
 	free(s);
