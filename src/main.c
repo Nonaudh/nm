@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <elf.h>
 #include "nm64.h"
+#include "nm32.h"
 #include <sys/stat.h>
 	
 int	not_an_elf(char *map)
@@ -78,7 +79,7 @@ int	fill_option_struct(char option, t_bonus *bonus)
 			bonus->p = 1;
 			break;
 		default:
-			ft_printf("bad option %c\n", option);
+			ft_printf("ft_nm: invalid option '%c'\n", option);
 			return (1);
 	}
 	return (0);
@@ -98,20 +99,6 @@ int	is_an_option(char *str, t_bonus *bonus)
 	return (0);
 }
 
-void	erase_unnecessary_bonus(t_bonus *bonus)
-{
-	if (bonus->p)
-		bonus->r = 0;
-	if (bonus->u)
-	{
-		bonus->g = 0;
-		bonus->a = 0;
-		return ;
-	}
-	if (bonus->g)
-		bonus->a = 0;
-}
-
 int main(int argc, char **argv)
 {
 	if (argc < 1)
@@ -120,27 +107,30 @@ int main(int argc, char **argv)
 	t_bonus bonus;
 	ft_bzero(&bonus, sizeof(t_bonus));
 	int elf_class;
+	int i;
 
-	for (int i = 1; i < argc; i++)
+	for (i = 1; i < argc; i++)
 	{
 		if (argv[i] && ft_strchr(argv[i], '-') == argv[i])
 		{
 			if (is_an_option(argv[i], &bonus))
 				return (1);
 		}
-		else
+	}
+
+	for (i = 1; i < argc; i++)
+	{
+		if (argv[i] && ft_strchr(argv[i], '-') != argv[i])
 		{
 			elf_class = find_class(argv[i]);
 			if (elf_class == ELFCLASS64)
 			{
-				erase_unnecessary_bonus(&bonus);
-				if (nm64(argv[i], &bonus))
-					return (1);		
-				ft_bzero(&bonus, sizeof(t_bonus));
+				nm64(argv[i], &bonus);
 			}
 			else if (elf_class == ELFCLASS32)
-				printf("elf32\n");
-		}		
+				nm32(argv[i], &bonus);
+		}
 	}
+
 	return (0);
 }

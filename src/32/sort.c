@@ -1,9 +1,9 @@
-#include "nm64.h"
+#include "nm32.h"
 #include <stdio.h>
 
-void	ft_swap_64(t_symbol64 *sym_biot, t_symbol64 *sym_phoni)
+void	ft_swap_32(t_symbol32 *sym_biot, t_symbol32 *sym_phoni)
 {
-	t_symbol64 tmp;
+	t_symbol32 tmp;
 
 	// printf("%s   %s\n", sym_biot->name, sym_phoni->name);
 
@@ -12,7 +12,7 @@ void	ft_swap_64(t_symbol64 *sym_biot, t_symbol64 *sym_phoni)
 	*sym_phoni = tmp;
 }
 
-char	*ft_strdup_without_underscore_and_dot_64(const char *s)
+char	*ft_strdup_without_underscore_and_dot_32(const char *s)
 {
 	char	*tab;
 	int		x;
@@ -39,15 +39,15 @@ char	*ft_strdup_without_underscore_and_dot_64(const char *s)
 	return (tab);
 }
 
-int	ft_strcmp_underscore_64(char *tab_ouret, char *tab_leau)
+int	ft_strcmp_underscore_32(char *tab_ouret, char *tab_leau)
 {
 	if (!tab_leau || !tab_ouret)
 	{
 		printf("Error : ft_strcmp_underscore\n");
 		return (0);
 	}
-	char *tmp_ouret = ft_strdup_without_underscore_and_dot_64(tab_ouret);
-	char *tmp_leau = ft_strdup_without_underscore_and_dot_64(tab_leau);
+	char *tmp_ouret = ft_strdup_without_underscore_and_dot_32(tab_ouret);
+	char *tmp_leau = ft_strdup_without_underscore_and_dot_32(tab_leau);
 
 	int x, y, i;
 
@@ -77,7 +77,7 @@ int	ft_strcmp_underscore_64(char *tab_ouret, char *tab_leau)
 	return (result);
 }
 
-void	bubbleSort_64(t_symbol64 *tab, size_t size, int bonus_r)
+void	bubbleSort_32(t_symbol32 *tab, size_t size, int bonus_r)
 {
 	int j, k;
 
@@ -85,15 +85,15 @@ void	bubbleSort_64(t_symbol64 *tab, size_t size, int bonus_r)
 	{
 		for (k = 0; k < size - 1; k++)
 		{
-			if (!bonus_r && (ft_strcmp_underscore_64(tab[k].name, tab[k + 1].name) > 0))
-				ft_swap_64(&tab[k], &tab[k + 1]);
-			else if (bonus_r && ft_strcmp_underscore_64(tab[k].name, tab[k + 1].name) < 0)
-				ft_swap_64(&tab[k], &tab[k + 1]);
+			if (!bonus_r && (ft_strcmp_underscore_32(tab[k].name, tab[k + 1].name) > 0))
+				ft_swap_32(&tab[k], &tab[k + 1]);
+			else if (bonus_r && ft_strcmp_underscore_32(tab[k].name, tab[k + 1].name) < 0)
+				ft_swap_32(&tab[k], &tab[k + 1]);
 		}
 	}
 }
 
-int	unique_symbol_64(char *name, t_symbol_container64 *s)
+int	unique_symbol_32(char *name, t_symbol_container32 *s)
 {
 	int	i;
 
@@ -106,19 +106,19 @@ int	unique_symbol_64(char *name, t_symbol_container64 *s)
 				break ;
 		}
 	}
-	if (i == s->size || ELF64_ST_TYPE(s->tab[i].symbol->st_info) == STT_FILE)
+	if (i == s->size || ELF32_ST_TYPE(s->tab[i].symbol->st_info) == STT_FILE)
 		return (1);
 	return (0);
 }
 
-t_symbol_container64	*erase_duplicate_symbol_64(t_symbol_part64 *symtab, t_symbol_part64 *dynsym, t_elf64 *e)
+t_symbol_container32	*erase_duplicate_symbol_32(t_symbol_part32 *symtab, t_symbol_part32 *dynsym, t_elf32 *e)
 {
 	int i;
-	t_symbol_container64	*s = malloc(sizeof(t_symbol_container64));
+	t_symbol_container32	*s = malloc(sizeof(t_symbol_container32));
 	if (!s)
 		return (NULL);
 	s->size = 0;
-	s->tab = malloc((symtab->size + dynsym->size) * sizeof(t_symbol64));
+	s->tab = malloc((symtab->size + dynsym->size) * sizeof(t_symbol32));
 	if (!s->tab)
 	{
 		free(s);
@@ -128,7 +128,7 @@ t_symbol_container64	*erase_duplicate_symbol_64(t_symbol_part64 *symtab, t_symbo
 	for (i = 0; i < symtab->size; i++)
 	{
 
-		if (unique_symbol_64(symtab->strtab + symtab->symbol[i].st_name, s))
+		if (unique_symbol_32(symtab->strtab + symtab->symbol[i].st_name, s))
 		{
 			s->tab[s->size].symbol = &symtab->symbol[i];
 			s->tab[s->size].name = symtab->strtab + symtab->symbol[i].st_name;
@@ -138,7 +138,7 @@ t_symbol_container64	*erase_duplicate_symbol_64(t_symbol_part64 *symtab, t_symbo
 		
 	for (i = 0; i < dynsym->size; i++)
 	{
-		if (unique_symbol_64(dynsym->strtab + dynsym->symbol[i].st_name, s))
+		if (unique_symbol_32(dynsym->strtab + dynsym->symbol[i].st_name, s))
 		{
 			s->tab[s->size].symbol = &dynsym->symbol[i];
 			s->tab[s->size].name = dynsym->strtab + dynsym->symbol[i].st_name;
@@ -148,16 +148,16 @@ t_symbol_container64	*erase_duplicate_symbol_64(t_symbol_part64 *symtab, t_symbo
 	return (s);
 }
 
-int	print_symbols_64(t_symbol_part64 *symtab, t_symbol_part64 *dynsym, t_elf64 *e)
+int	print_symbols_32(t_symbol_part32 *symtab, t_symbol_part32 *dynsym, t_elf32 *e)
 {
 	int i;
-	t_symbol_container64	*s = erase_duplicate_symbol_64(symtab, dynsym, e);
+	t_symbol_container32	*s = erase_duplicate_symbol_32(symtab, dynsym, e);
 	if (!s)
 		return (1);
 
 	if (!e->bonus->p)
-		bubbleSort_64(s->tab, s->size, e->bonus->r);
-	print_all_symbols_64(s, e);
+		bubbleSort_32(s->tab, s->size, e->bonus->r);
+	print_all_symbols_32(s, e);
 	free(s->tab);
 	free(s);
 

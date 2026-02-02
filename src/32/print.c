@@ -1,10 +1,10 @@
-#include "nm64.h"
+#include "nm32.h"
 #include <stdio.h>
 
-char	define_symbol_type_64(Elf64_Sym *symtab, t_elf64 *e, char *name)
+char	define_symbol_type_32(Elf32_Sym *symtab, t_elf32 *e, char *name)
 {
-	int	bind = ELF64_ST_BIND(symtab->st_info);
-	int	type = ELF64_ST_TYPE(symtab->st_info);
+	int	bind = ELF32_ST_BIND(symtab->st_info);
+	int	type = ELF32_ST_TYPE(symtab->st_info);
 	char c = 0;
 
 	if (symtab->st_shndx == SHN_UNDEF && (name && name[0]))
@@ -32,7 +32,7 @@ char	define_symbol_type_64(Elf64_Sym *symtab, t_elf64 *e, char *name)
 			return ('W');
 	}
 
-	Elf64_Shdr *shdr = &e->sectionsHeader[symtab->st_shndx];
+	Elf32_Shdr *shdr = &e->sectionsHeader[symtab->st_shndx];
 
 	if (shdr->sh_flags & SHF_EXECINSTR)
 		return ('T');
@@ -52,33 +52,33 @@ char	define_symbol_type_64(Elf64_Sym *symtab, t_elf64 *e, char *name)
 	return ('?');
 }
 
-void	print_local_or_global_64(char c, Elf64_Sym *symtab)
+void	print_local_or_global_32(char c, Elf32_Sym *symtab)
 {
-	if (c != 'U' && c != 'W' && c != 'V' && ELF64_ST_BIND(symtab->st_info) == STB_LOCAL)
+	if (c != 'U' && c != 'W' && c != 'V' && ELF32_ST_BIND(symtab->st_info) == STB_LOCAL)
 		c = ft_tolower(c);
 	printf(" %c ", c);
 }
 
-void	print_symbol_value_64(Elf64_Sym *symtab, char *name)
+void	print_symbol_value_32(Elf32_Sym *symtab, char *name)
 {
 		if (symtab->st_value || symtab->st_shndx == SHN_ABS || (name && !name[0]))
-		printf("%016lx", symtab->st_value);
+		printf("%08x", symtab->st_value);
 	else
-		for (int i = 0; i < 64 / 4; i++)
+		for (int i = 0; i < 32 / 4; i++)
 			printf(" ");
 }
 
-void print_symbol_line_64(Elf64_Sym *symtab, char *name,  t_elf64 *e)
+void print_symbol_line_32(Elf32_Sym *symtab, char *name,  t_elf32 *e)
 {
-	print_symbol_value_64(symtab, name);
+	print_symbol_value_32(symtab, name);
 
-	char c = define_symbol_type_64(symtab, e, name);
-	print_local_or_global_64(c, symtab);
+	char c = define_symbol_type_32(symtab, e, name);
+	print_local_or_global_32(c, symtab);
 
 	printf("%s\n", name);
 }
 
-int	symbol_to_print_64(t_symbol64 *symbol, t_elf64 *e)
+int	symbol_to_print_32(t_symbol32 *symbol, t_elf32 *e)
 {
 	if (e->bonus->u)
 	{
@@ -88,7 +88,7 @@ int	symbol_to_print_64(t_symbol64 *symbol, t_elf64 *e)
 	}
 	if (e->bonus->g)
 	{
-		if (symbol->symbol->st_shndx == SHN_UNDEF && symbol->name && symbol->name[0] || ELF64_ST_BIND(symbol->symbol->st_info) == STB_GLOBAL)
+		if (symbol->symbol->st_shndx == SHN_UNDEF && symbol->name && symbol->name[0] || ELF32_ST_BIND(symbol->symbol->st_info) == STB_GLOBAL)
 			return (1);
 		return (0);
 	}
@@ -99,11 +99,11 @@ int	symbol_to_print_64(t_symbol64 *symbol, t_elf64 *e)
 	return (0);
 }
 
-void	print_all_symbols_64(t_symbol_container64 *s, t_elf64 *e)
+void	print_all_symbols_32(t_symbol_container32 *s, t_elf32 *e)
 {
 	for (int i = 0; i < s->size; i++)
 	{
-		if (symbol_to_print_64(&s->tab[i], e))
-			print_symbol_line_64(s->tab[i].symbol, s->tab[i].name, e);
+		if (symbol_to_print_32(&s->tab[i], e))
+			print_symbol_line_32(s->tab[i].symbol, s->tab[i].name, e);
 	}
 }

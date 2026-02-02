@@ -3,15 +3,7 @@
 
 #include <elf.h>
 #include "libft.h"
-
-typedef struct s_bonus
-{
-	int a;
-	int g;
-	int u;
-	int r;
-	int p;
-} t_bonus;
+#include "bonus.h"
 
 typedef struct s_symbol_part64
 {
@@ -45,17 +37,17 @@ typedef struct s_elf64
 	t_bonus *bonus;
 } t_elf64;
 
-int	print_symbols(t_symbol_part64 *symtab, t_symbol_part64 *dynsym, t_elf64 *e);
+int	print_symbols_64(t_symbol_part64 *symtab, t_symbol_part64 *dynsym, t_elf64 *e);
 
-void	*get_file_in_a_map(int fd, int page_size);
-Elf64_Ehdr	*get_elf_header(t_elf64 *e);
-Elf64_Shdr	*get_sections_header(t_elf64 *e);
+void	*get_file_in_a_map_64(int fd, int page_size);
+Elf64_Ehdr	*get_elf_header_64(t_elf64 *e);
+Elf64_Shdr	*get_sections_header_64(t_elf64 *e);
 
-char	*get_section_by_header(t_elf64 *e, Elf64_Shdr *sectionHeader);
-char	*get_section_by_name(t_elf64 *e, const char *name);
-Elf64_Shdr	*get_section_header_by_name(t_elf64 *e, const char *name);
+char	*get_section_by_header_64(t_elf64 *e, Elf64_Shdr *sectionHeader);
+char	*get_section_by_name_64(t_elf64 *e, const char *name);
+Elf64_Shdr	*get_section_header_by_name_64(t_elf64 *e, const char *name);
 
-void	print_all_symbols(t_symbol_container64 *s, t_elf64 *e);
+void	print_all_symbols_64(t_symbol_container64 *s, t_elf64 *e);
 int nm64(char *filename, t_bonus *bonus);
 
 #endif

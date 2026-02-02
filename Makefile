@@ -20,13 +20,14 @@ LIBRARIES = -Llib/libft -lft
 
 DSRC64 = src/64/
 
-DSRC23 = src/32/
+DSRC32 = src/32/
 
 DLIB = lib/libft/
 
 LIB = $(DLIB)libft.a
 
-SRC = src/main.c $(DSRC64)nm.c $(DSRC64)sort.c $(DSRC64)utils_elf.c $(DSRC64)print.c
+SRC = src/main.c $(DSRC64)nm.c $(DSRC64)sort.c $(DSRC64)utils_elf.c $(DSRC64)print.c \
+					$(DSRC32)nm.c $(DSRC32)sort.c $(DSRC32)utils_elf.c $(DSRC32)print.c
 
 NAME = ft_nm
 
@@ -55,5 +56,13 @@ fclean : clean
 	@rm -rf $(LIB)
 
 re : fclean $(NAME)
+
+copy :
+	mkdir -p src/32
+	cp src/64/* src/32/
+	cp inc/nm64.h inc/nm32.h
+	sed -i "s/64/32/g" src/32/*
+	sed -i "s/64/32/g" inc/nm32.h
+	sed -i "s/%016lx/%08x/g" src/32/print.c
 
 .PHONY: all clean fclean re

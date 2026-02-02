@@ -5,4 +5,5 @@ nm_tester/
 *.so
 ft_nm
 fredo
-
+ft_nm.txt
+nm.txt
