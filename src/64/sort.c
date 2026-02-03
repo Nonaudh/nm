@@ -5,8 +5,6 @@ void	ft_swap_64(t_symbol64 *sym_biot, t_symbol64 *sym_phoni)
 {
 	t_symbol64 tmp;
 
-	// printf("%s   %s\n", sym_biot->name, sym_phoni->name);
-
 	tmp = *sym_biot;
 	*sym_biot = *sym_phoni;
 	*sym_phoni = tmp;
@@ -111,6 +109,13 @@ int	unique_symbol_64(char *name, t_symbol_container64 *s)
 	return (0);
 }
 
+int	not_second_blank(char *name, int i)
+{
+	if (name && !name[0] && i != 0)
+		return (0);
+	return(1);
+}
+
 t_symbol_container64	*erase_duplicate_symbol_64(t_symbol_part64 *symtab, t_symbol_part64 *dynsym, t_elf64 *e)
 {
 	int i;
@@ -118,7 +123,7 @@ t_symbol_container64	*erase_duplicate_symbol_64(t_symbol_part64 *symtab, t_symbo
 	if (!s)
 		return (NULL);
 	s->size = 0;
-	s->tab = malloc((symtab->size + dynsym->size) * sizeof(t_symbol64));
+	s->tab = malloc((symtab->size + dynsym->size + 1) * sizeof(t_symbol64));
 	if (!s->tab)
 	{
 		free(s);
@@ -128,23 +133,23 @@ t_symbol_container64	*erase_duplicate_symbol_64(t_symbol_part64 *symtab, t_symbo
 	for (i = 0; i < symtab->size; i++)
 	{
 
-		if (unique_symbol_64(symtab->strtab + symtab->symbol[i].st_name, s))
+		if (not_second_blank(symtab->strtab + symtab->symbol[i].st_name, i))
 		{
 			s->tab[s->size].symbol = &symtab->symbol[i];
 			s->tab[s->size].name = symtab->strtab + symtab->symbol[i].st_name;
 			s->size++;
 		}
-	}
-		
-	for (i = 0; i < dynsym->size; i++)
-	{
-		if (unique_symbol_64(dynsym->strtab + dynsym->symbol[i].st_name, s))
-		{
-			s->tab[s->size].symbol = &dynsym->symbol[i];
-			s->tab[s->size].name = dynsym->strtab + dynsym->symbol[i].st_name;
-			s->size++;
-		}
-	}
+
+	}	
+	// for (i = 0; i < dynsym->size; i++)
+	// {
+	// 	if (1|| unique_symbol_64(dynsym->strtab + dynsym->symbol[i].st_name, s))
+	// 	{
+	// 		s->tab[s->size].symbol = &dynsym->symbol[i];
+	// 		s->tab[s->size].name = dynsym->strtab + dynsym->symbol[i].st_name;
+	// 		s->size++;
+	// 	}
+	// }
 	return (s);
 }
 

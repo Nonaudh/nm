@@ -33,7 +33,7 @@ int	safe_exit_64(t_elf64	*e)
 int	fill_symbol_struct_64(t_symbol_part64 *symtab, t_symbol_part64 *dynsym, t_elf64 *e)
 {
 	Elf64_Shdr	*symtabHeader = get_section_header_by_name_64(e, "symtab");
-	Elf64_Shdr	*dynsymHeader = get_section_header_by_name_64(e, "dynsym");
+	Elf64_Shdr	*dynsymHeader = get_section_header_by_name_64(e, "dynsym"); // probably need to erase dynsym
 	if (!symtabHeader)
 		return (1);
 	if (symtabHeader)
@@ -52,19 +52,19 @@ int	fill_symbol_struct_64(t_symbol_part64 *symtab, t_symbol_part64 *dynsym, t_el
 	{
 		symtab->size = 0;
 	}
-	if (dynsymHeader)
-	{
-		dynsym->size = dynsymHeader->sh_size / dynsymHeader->sh_entsize;
+	// if (dynsymHeader)
+	// {
+	// 	dynsym->size = dynsymHeader->sh_size / dynsymHeader->sh_entsize;
 
-		dynsym->symbol = (Elf64_Sym *)get_section_by_header_64(e, dynsymHeader);
-		if (!dynsym->symbol)
-			return (1);
+	// 	dynsym->symbol = (Elf64_Sym *)get_section_by_header_64(e, dynsymHeader);
+	// 	if (!dynsym->symbol)
+	// 		return (1);
 		
-		dynsym->strtab = get_section_by_name_64(e, "dynstr");
-		if (!dynsym->strtab)
-			return (1);
-	}
-	else
+	// 	dynsym->strtab = get_section_by_name_64(e, "dynstr");
+	// 	if (!dynsym->strtab)
+	// 		return (1);
+	// }
+	// else
 		dynsym->size = 0;
 	
 	return (0);
