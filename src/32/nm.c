@@ -6,18 +6,15 @@
 #include <errno.h>
 #include <sys/stat.h>
 
-int	size_of_file_32(int fd)
+int	size_of_file_32(int fd, char *filename)
 {
 	struct stat stat;
 
 	if (fstat(fd, &stat))
-	{
-		ft_putstr_fd("Error: fsat\n", 2);
 		return (-1);
-	}
 	if (stat.st_size < sizeof(Elf32_Ehdr))
 	{
-		ft_putstr_fd("File too small\n", 2);
+		ft_dprintf(2, "ft_nm: %s: file format not recognized\n", filename);
 		return (-1);
 	}
 	return (stat.st_size);
@@ -30,11 +27,10 @@ int	safe_exit_32(t_elf32	*e)
 	return (1);
 }
 
-int	fill_symbol_struct_32(t_symbol_part32 *symtab, t_symbol_part32 *dynsym, t_elf32 *e)
+int	fill_symbol_struct_32(t_symbol_part32 *symtab, t_elf32 *e)
 {
 	Elf32_Shdr	*symtabHeader = get_section_header_by_name_32(e, "symtab");
-	Elf32_Shdr	*dynsymHeader = get_section_header_by_name_32(e, "dynsym");
-	if (!dynsymHeader && !symtabHeader)
+	if (!symtabHeader)
 		return (1);
 	if (symtabHeader)
 	{
@@ -52,33 +48,17 @@ int	fill_symbol_struct_32(t_symbol_part32 *symtab, t_symbol_part32 *dynsym, t_el
 	{
 		symtab->size = 0;
 	}
-	if (dynsymHeader)
-	{
-		dynsym->size = dynsymHeader->sh_size / dynsymHeader->sh_entsize;
-
-		dynsym->symbol = (Elf32_Sym *)get_section_by_header_32(e, dynsymHeader);
-		if (!dynsym->symbol)
-			return (1);
-		
-		dynsym->strtab = get_section_by_name_32(e, "dynstr");
-		if (!dynsym->strtab)
-			return (1);
-	}
-	else
-		dynsym->size = 0;
-	
 	return (0);
 }
 
-int	list_symbols_32(t_elf32 *e)
+int	list_symbols_32(t_elf32 *e, int multiple_file)
 {
 	t_symbol_part32	symtab;
-	t_symbol_part32	dynsym;
 
-	if (fill_symbol_struct_32(&symtab, &dynsym, e))
+	if (fill_symbol_struct_32(&symtab, e))
 		return (1);
 
-	print_symbols_32(&symtab, &dynsym, e);
+	print_symbols_32(&symtab, e, multiple_file);
 
 	return (0);
 }
@@ -93,15 +73,16 @@ int	init_elf_32(t_elf32 *e, char *filename)
 		perror(filename);
 		return (1);
 	}
+	e->filename = filename;
 
-	e->file_size = size_of_file_32(fd);
+	e->file_size = size_of_file_32(fd, filename);
 	if (e->file_size == -1)
 	{
 		close (fd);
 		return (1);
 	}
 
-	e->page_size = getpagesize();
+	// e->page_size = getpagesize();
 
 	e->file_map = get_file_in_a_map_32(fd, e->file_size);
 	if (!e->file_map)
@@ -126,7 +107,7 @@ int	init_elf_32(t_elf32 *e, char *filename)
 }
 
 
-int nm32(char *filename, t_bonus *bonus)
+int nm32(char *filename, t_bonus *bonus, int multiple_file)
 {
 	t_elf32	e;
 
@@ -134,8 +115,8 @@ int nm32(char *filename, t_bonus *bonus)
 		return (safe_exit_32(&e));
 	e.bonus = bonus;
 
-	if (list_symbols_32(&e))
-		ft_printf("nm: %s: no symbols\n", filename);
+	if (list_symbols_32(&e, multiple_file))
+		ft_dprintf(2, "nm: %s: no symbols\n", filename);
 
 	safe_exit_32(&e);
 

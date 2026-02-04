@@ -25,7 +25,10 @@ ft_calloc.c ft_strdup.c ft_strlcat.c ft_putchar_fd.c ft_putendl_fd.c \
 ft_putnbr_fd.c ft_putstr_fd.c ft_strmapi.c ft_striteri.c ft_strtrim.c \
 ../get_next_line/get_next_line_bonus.c ../get_next_line/get_next_line_utils_bonus.c \
 ../ft_printf/ft_printf.c ../ft_printf/ft_print_character.c \
-../ft_printf/ft_print_decimal.c ../ft_printf/ft_print_hexadecimal.c
+../ft_printf/ft_print_decimal.c ../ft_printf/ft_print_hexadecimal.c \
+../ft_dprintf/ft_dprintf.c ../ft_dprintf/ft_dprint_character.c \
+../ft_dprintf/ft_dprint_decimal.c ../ft_dprintf/ft_dprint_hexadecimal.c \
+
 
 SOURCES_BONUS = ft_lstnew.c ft_lstadd_front.c ft_lstsize.c ft_lstlast.c ft_lstadd_back.c
 

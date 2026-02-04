@@ -6,17 +6,17 @@
 #include "nm32.h"
 #include <sys/stat.h>
 	
-int	not_an_elf(char *map)
+int	not_an_elf(char *map, char *filename)
 {
 	if (map[0] != 0x7f || map[1] != 'E' || map[2] != 'L' || map[3] != 'F')
 	{
-		ft_putstr_fd("Not an ELF\n", 2);
+		ft_dprintf(2, "ft_nm: %s: file format not recognized\n", filename);
 		return (1);
 	}
 	return (0);
 }
 
-int	check_file(int fd)
+int	check_file(int fd, char *filename)
 {
 	struct stat stat;
 
@@ -25,9 +25,11 @@ int	check_file(int fd)
 		ft_putstr_fd("Error: fsat\n", 2);
 		return (1);
 	}
+	if (!stat.st_size)
+		return (1);
 	if (stat.st_size < EI_NIDENT)
 	{
-		ft_putstr_fd("File too small\n", 2);
+		ft_dprintf(2, "ft_nm: %s: file format not recognized\n", filename);
 		return (1);
 	}
 	return (0);		
@@ -42,7 +44,7 @@ int	find_class(char *filename)
 		perror(filename);
 		return (0);
 	}
-	if (check_file(fd))
+	if (check_file(fd, filename))
 	{
 		close(fd);
 		return (0);
@@ -52,7 +54,7 @@ int	find_class(char *filename)
 		return (0);
 	close (fd);
 
-	if (not_an_elf(map))
+	if (not_an_elf(map, filename))
 		return (0);
 	class = map[EI_CLASS];
 	munmap(map, EI_NIDENT);
@@ -79,7 +81,7 @@ int	fill_option_struct(char option, t_bonus *bonus)
 			bonus->p = 1;
 			break;
 		default:
-			ft_printf("ft_nm: invalid option '%c'\n", option);
+			ft_dprintf(2, "ft_nm: invalid option '%c'\n", option);
 			return (1);
 	}
 	return (0);
@@ -108,6 +110,8 @@ int main(int argc, char **argv)
 	ft_bzero(&bonus, sizeof(t_bonus));
 	int elf_class;
 	int i;
+	int	multiple_file = 0;
+	int return_value = 0;
 
 	for (i = 1; i < argc; i++)
 	{
@@ -122,15 +126,22 @@ int main(int argc, char **argv)
 	{
 		if (argv[i] && ft_strchr(argv[i], '-') != argv[i])
 		{
+			if (i != argc - 1)
+				multiple_file = 1;
 			elf_class = find_class(argv[i]);
 			if (elf_class == ELFCLASS64)
 			{
-				nm64(argv[i], &bonus);
+				if (nm64(argv[i], &bonus, multiple_file))
+					return_value = 1;
 			}
 			else if (elf_class == ELFCLASS32)
-				nm32(argv[i], &bonus);
+			{
+				if (nm32(argv[i], &bonus, multiple_file))
+					return_value = 1;
+			}
+			else
+				return_value = 1;
 		}
 	}
-
-	return (0);
+	return (return_value);
 }

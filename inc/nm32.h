@@ -28,7 +28,7 @@ typedef struct s_symbol_container32
 
 typedef struct s_elf32
 {
-	int page_size;
+	char *filename;
 	int	file_size;
 	void	*file_map;
 	Elf32_Ehdr	*elf_header;
@@ -37,7 +37,7 @@ typedef struct s_elf32
 	t_bonus *bonus;
 } t_elf32;
 
-int	print_symbols_32(t_symbol_part32 *symtab, t_symbol_part32 *dynsym, t_elf32 *e);
+int	print_symbols_32(t_symbol_part32 *symtab, t_elf32 *e, int multiple_file);
 
 void	*get_file_in_a_map_32(int fd, int page_size);
 Elf32_Ehdr	*get_elf_header_32(t_elf32 *e);
@@ -48,6 +48,6 @@ char	*get_section_by_name_32(t_elf32 *e, const char *name);
 Elf32_Shdr	*get_section_header_by_name_32(t_elf32 *e, const char *name);
 
 void	print_all_symbols_32(t_symbol_container32 *s, t_elf32 *e);
-int nm32(char *filename, t_bonus *bonus);
+int nm32(char *filename, t_bonus *bonus, int multiple_file);
 
 #endif

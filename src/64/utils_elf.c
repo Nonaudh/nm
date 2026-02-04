@@ -23,7 +23,7 @@ Elf64_Shdr	*get_sections_header_64(t_elf64 *e)
 {
 	if (e->elf_header->e_shoff + (e->elf_header->e_shnum * sizeof(Elf64_Shdr)) > e->file_size)
 	{
-		ft_putstr_fd("file too short\n", 2);
+		ft_dprintf(2, "ft_nm: %s: file format not recognized\n", e->filename);
 		return (NULL);
 	}
 	return (e->file_map + e->elf_header->e_shoff);
