@@ -59,13 +59,28 @@ void	print_local_or_global_64(char c, Elf64_Sym *symtab)
 	printf(" %c ", c);
 }
 
+void	print_hexa_padding(Elf64_Addr value)
+{
+	char buff[17];
+	char *hex = "0123456789abcdef";
+
+	buff[16] = 0;
+	for (int i = 15; i >= 0; i--)
+	{
+		buff[i] = hex[value & 0xF];
+		value >>= 4;
+	}
+	ft_printf("%s", buff);
+}
+
 void	print_symbol_value_64(Elf64_Sym *symtab, char *name)
 {
 		if (symtab->st_value || symtab->st_shndx == SHN_ABS || (name && !name[0]))
-		printf("%016lx", symtab->st_value);
+			print_hexa_padding(symtab->st_value);
+		// printf("%016lx", symtab->st_value);
 	else
 		for (int i = 0; i < 64 / 4; i++)
-			printf(" ");
+			ft_printf(" ");
 }
 
 void print_symbol_line_64(Elf64_Sym *symtab, char *name,  t_elf64 *e)
