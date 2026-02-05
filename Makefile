@@ -31,7 +31,7 @@ SRC = src/main.c $(DSRC64)nm.c $(DSRC64)sort.c $(DSRC64)utils_elf.c $(DSRC64)pri
 
 NAME = ft_nm
 
-all : $(NAME)
+all : copy $(NAME)
 
 DBUILD = build/
 

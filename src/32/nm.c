@@ -1,10 +1,10 @@
 #include <sys/mman.h>
 #include <fcntl.h>
-#include <stdio.h>
 #include "nm32.h"
 #include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <stdio.h>
 
 int	size_of_file_32(int fd, char *filename)
 {
@@ -20,10 +20,34 @@ int	size_of_file_32(int fd, char *filename)
 	return (stat.st_size);
 }
 
-int	safe_exit_32(t_elf32	*e)
+int	safe_exit_32(t_elf32 *e)
 {	
 	if (e->file_map)
 		munmap(e->file_map, e->file_size);
+	return (1);
+}
+
+int	print_dynsym_32(t_elf32 *e)
+{
+	Elf32_Shdr	*symtabHeader = get_section_header_by_name_32(e, "dynsym");
+	if (!symtabHeader)
+		return (1);
+	int size = symtabHeader->sh_size / symtabHeader->sh_entsize;
+
+	Elf32_Sym * symbol = (Elf32_Sym *)get_section_by_header_32(e, symtabHeader);
+	if (!symbol)
+		return (1);
+
+	char *strtab = get_section_by_name_32(e, "dynstr");
+	if (!strtab)
+		return (1);
+
+	ft_printf("===============\n");
+	for (int i = 0; i < size; i++)
+	{
+		ft_printf("%s\n", symbol[i].st_name + strtab);
+	}
+	ft_printf("===============\n");
 	return (1);
 }
 
@@ -32,22 +56,24 @@ int	fill_symbol_struct_32(t_symbol_part32 *symtab, t_elf32 *e)
 	Elf32_Shdr	*symtabHeader = get_section_header_by_name_32(e, "symtab");
 	if (!symtabHeader)
 		return (1);
-	if (symtabHeader)
-	{
-		symtab->size = symtabHeader->sh_size / symtabHeader->sh_entsize;
+	symtab->size = symtabHeader->sh_size / symtabHeader->sh_entsize;
 
-		symtab->symbol = (Elf32_Sym *)get_section_by_header_32(e, symtabHeader);
-		if (!symtab->symbol)
-			return (1);
-	
-		symtab->strtab = get_section_by_name_32(e, "strtab");
-		if (!symtab->strtab)
-			return (1);
-	}
-	else
-	{
-		symtab->size = 0;
-	}
+	symtab->symbol = (Elf32_Sym *)get_section_by_header_32(e, symtabHeader);
+	if (!symtab->symbol)
+		return (1);
+
+	symtab->strtab = get_section_by_name_32(e, "strtab");
+	if (!symtab->strtab)
+		return (1);
+
+	// ft_printf("===============\n");
+	// for (int i = 0; i < symtab->size; i++)
+	// {
+	// 	ft_printf("%s\n", symtab->symbol[i].st_name + symtab->strtab);
+	// }
+	// ft_printf("===============\n");	
+
+	// print_dynsym_32(e);
 	return (0);
 }
 

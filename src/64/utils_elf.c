@@ -1,6 +1,5 @@
 #include "nm64.h"
 #include <sys/mman.h>
-#include <stdio.h>
 
 void	*get_file_in_a_map_64(int fd, int file_size)
 {

@@ -1,5 +1,4 @@
 #include "nm32.h"
-#include <stdio.h>
 
 char	define_symbol_type_32(Elf32_Sym *symtab, t_elf32 *e, char *name)
 {
@@ -9,9 +8,9 @@ char	define_symbol_type_32(Elf32_Sym *symtab, t_elf32 *e, char *name)
 
 	if (symtab->st_shndx == SHN_UNDEF && (name && name[0]))
 	{
-		if (bind == STB_WEAK)
-			return ('w');
-		return ('U');
+		if (bind != STB_WEAK)
+			return ('U');
+		// return ('U');
 	}
 
 	if (symtab->st_shndx == SHN_ABS || (name && !name[0]))
@@ -56,16 +55,31 @@ void	print_local_or_global_32(char c, Elf32_Sym *symtab)
 {
 	if (c != 'U' && c != 'W' && c != 'V' && ELF32_ST_BIND(symtab->st_info) == STB_LOCAL)
 		c = ft_tolower(c);
-	printf(" %c ", c);
+	ft_printf(" %c ", c);
+}
+
+void	print_hexa_padding_32(Elf32_Addr value, int base)
+{
+	char buff[17];
+	char *hex = "0123456789abcdef";
+	base /= 4;
+
+	buff[base] = 0;
+	for (int i = base - 1; i >= 0; i--)
+	{
+		buff[i] = hex[value & 0xF];
+		value >>= 4;
+	}
+	ft_printf("%s", buff);
 }
 
 void	print_symbol_value_32(Elf32_Sym *symtab, char *name)
 {
-		if (symtab->st_value || symtab->st_shndx == SHN_ABS || (name && !name[0]))
-		printf("%08x", symtab->st_value);
+		if (symtab->st_shndx != SHN_UNDEF || (name && !name[0]))
+			print_hexa_padding_32(symtab->st_value, 32);
 	else
 		for (int i = 0; i < 32 / 4; i++)
-			printf(" ");
+			ft_printf(" ");
 }
 
 void print_symbol_line_32(Elf32_Sym *symtab, char *name,  t_elf32 *e)
@@ -75,11 +89,12 @@ void print_symbol_line_32(Elf32_Sym *symtab, char *name,  t_elf32 *e)
 	char c = define_symbol_type_32(symtab, e, name);
 	print_local_or_global_32(c, symtab);
 
-	printf("%s\n", name);
+	ft_printf("%s\n", name);
 }
 
 int	symbol_to_print_32(t_symbol32 *symbol, t_elf32 *e)
 {
+	// return (1);
 	if (e->bonus->u)
 	{
 		if (symbol->symbol->st_shndx == SHN_UNDEF && symbol->name && symbol->name[0])
@@ -94,8 +109,10 @@ int	symbol_to_print_32(t_symbol32 *symbol, t_elf32 *e)
 	}
 	if (e->bonus->a)
 		return (1);
-	if (symbol->symbol->st_shndx != SHN_ABS && symbol->name && symbol->name[0])
+	if (ELF32_ST_TYPE(symbol->symbol->st_info) != STT_FILE && ELF32_ST_TYPE(symbol->symbol->st_info) != STT_SECTION && symbol->name && symbol->name[0])
 		return (1);
+	// if ((symbol->symbol->st_shndx != SHN_ABS || ELF32_ST_BIND(symbol->symbol->st_info) == STB_GLOBAL) && symbol->name && symbol->name[0])
+	// 	return (1);
 	return (0);
 }
 

@@ -1,5 +1,4 @@
 #include "nm64.h"
-#include <stdio.h>
 
 char	define_symbol_type_64(Elf64_Sym *symtab, t_elf64 *e, char *name)
 {
@@ -9,9 +8,9 @@ char	define_symbol_type_64(Elf64_Sym *symtab, t_elf64 *e, char *name)
 
 	if (symtab->st_shndx == SHN_UNDEF && (name && name[0]))
 	{
-		if (bind == STB_WEAK)
-			return ('w');
-		return ('U');
+		if (bind != STB_WEAK)
+			return ('U');
+		// return ('U');
 	}
 
 	if (symtab->st_shndx == SHN_ABS || (name && !name[0]))
@@ -56,16 +55,17 @@ void	print_local_or_global_64(char c, Elf64_Sym *symtab)
 {
 	if (c != 'U' && c != 'W' && c != 'V' && ELF64_ST_BIND(symtab->st_info) == STB_LOCAL)
 		c = ft_tolower(c);
-	printf(" %c ", c);
+	ft_printf(" %c ", c);
 }
 
-void	print_hexa_padding(Elf64_Addr value)
+void	print_hexa_padding_64(Elf64_Addr value, int base)
 {
 	char buff[17];
 	char *hex = "0123456789abcdef";
+	base /= 4;
 
-	buff[16] = 0;
-	for (int i = 15; i >= 0; i--)
+	buff[base] = 0;
+	for (int i = base - 1; i >= 0; i--)
 	{
 		buff[i] = hex[value & 0xF];
 		value >>= 4;
@@ -75,9 +75,8 @@ void	print_hexa_padding(Elf64_Addr value)
 
 void	print_symbol_value_64(Elf64_Sym *symtab, char *name)
 {
-		if (symtab->st_value || symtab->st_shndx == SHN_ABS || (name && !name[0]))
-			print_hexa_padding(symtab->st_value);
-		// printf("%016lx", symtab->st_value);
+		if (symtab->st_shndx != SHN_UNDEF || (name && !name[0]))
+			print_hexa_padding_64(symtab->st_value, 64);
 	else
 		for (int i = 0; i < 64 / 4; i++)
 			ft_printf(" ");
@@ -90,11 +89,12 @@ void print_symbol_line_64(Elf64_Sym *symtab, char *name,  t_elf64 *e)
 	char c = define_symbol_type_64(symtab, e, name);
 	print_local_or_global_64(c, symtab);
 
-	printf("%s\n", name);
+	ft_printf("%s\n", name);
 }
 
 int	symbol_to_print_64(t_symbol64 *symbol, t_elf64 *e)
 {
+	// return (1);
 	if (e->bonus->u)
 	{
 		if (symbol->symbol->st_shndx == SHN_UNDEF && symbol->name && symbol->name[0])
@@ -109,8 +109,10 @@ int	symbol_to_print_64(t_symbol64 *symbol, t_elf64 *e)
 	}
 	if (e->bonus->a)
 		return (1);
-	if (symbol->symbol->st_shndx != SHN_ABS && symbol->name && symbol->name[0])
+	if (ELF64_ST_TYPE(symbol->symbol->st_info) != STT_FILE && ELF64_ST_TYPE(symbol->symbol->st_info) != STT_SECTION && symbol->name && symbol->name[0])
 		return (1);
+	// if ((symbol->symbol->st_shndx != SHN_ABS || ELF64_ST_BIND(symbol->symbol->st_info) == STB_GLOBAL) && symbol->name && symbol->name[0])
+	// 	return (1);
 	return (0);
 }
 

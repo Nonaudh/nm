@@ -1,10 +1,10 @@
 #include <sys/mman.h>
 #include <fcntl.h>
-#include <stdio.h>
 #include <elf.h>
 #include "nm64.h"
 #include "nm32.h"
 #include <sys/stat.h>
+#include <stdio.h>
 	
 int	not_an_elf(char *map, char *filename)
 {

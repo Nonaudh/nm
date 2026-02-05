@@ -1,5 +1,4 @@
 #include "nm32.h"
-#include <stdio.h>
 
 void	ft_swap_32(t_symbol32 *sym_biot, t_symbol32 *sym_phoni)
 {
@@ -10,7 +9,7 @@ void	ft_swap_32(t_symbol32 *sym_biot, t_symbol32 *sym_phoni)
 	*sym_phoni = tmp;
 }
 
-char	*ft_strdup_without_underscore_and_dot_32(const char *s)
+char	*ft_strdup_ifalnum_32(const char *s)
 {
 	char	*tab;
 	int		x;
@@ -26,7 +25,7 @@ char	*ft_strdup_without_underscore_and_dot_32(const char *s)
 	x = 0;
 	while (s[i])
 	{
-		if (s[i] != '_' && s[i] != '.')
+		if (ft_isalnum(s[i]))
 		{
 			tab[x] = s[i];
 			x++;
@@ -40,12 +39,10 @@ char	*ft_strdup_without_underscore_and_dot_32(const char *s)
 int	ft_strcmp_underscore_32(char *tab_ouret, char *tab_leau)
 {
 	if (!tab_leau || !tab_ouret)
-	{
-		printf("Error : ft_strcmp_underscore\n");
 		return (0);
-	}
-	char *tmp_ouret = ft_strdup_without_underscore_and_dot_32(tab_ouret);
-	char *tmp_leau = ft_strdup_without_underscore_and_dot_32(tab_leau);
+
+	char *tmp_ouret = ft_strdup_ifalnum_32(tab_ouret);
+	char *tmp_leau = ft_strdup_ifalnum_32(tab_leau);
 
 	int i;
 
@@ -55,11 +52,16 @@ int	ft_strcmp_underscore_32(char *tab_ouret, char *tab_leau)
 	for (i = 0; tmp_leau[i]; i++)
 		tmp_leau[i] = ft_tolower(tmp_leau[i]);	
 
-	int max = ft_strlen(tmp_ouret) > ft_strlen(tab_leau) ? ft_strlen(tab_ouret) : ft_strlen(tab_leau);
+	int max = ft_strlen(tmp_ouret) > ft_strlen(tmp_leau) ? ft_strlen(tmp_ouret) : ft_strlen(tmp_leau);
 	int result = ft_strncmp(tmp_ouret, tmp_leau, max);
 
 	if (result == 0 && tab_leau[0] == '_')
-		result = 1;
+	{
+		max = ft_strlen(tab_ouret) > ft_strlen(tab_leau) ? ft_strlen(tab_ouret) : ft_strlen(tab_leau);
+		result = ft_strncmp(tab_ouret, tab_leau, max);
+		// ft_printf("%s   %s\n", tab_ouret, tab_leau);
+		// result = 1;
+	}
 
 	if (tmp_ouret)
 		free(tmp_ouret);
@@ -107,7 +109,7 @@ int	not_second_blank_32(char *name, int i)
 {
 	if (name && !name[0] && i != 0)
 		return (0);
-	return(1);
+	return (1);
 }
 
 t_symbol_container32	*erase_duplicate_symbol_32(t_symbol_part32 *symtab, t_elf32 *e)
@@ -130,6 +132,7 @@ t_symbol_container32	*erase_duplicate_symbol_32(t_symbol_part32 *symtab, t_elf32
 		{
 			s->tab[s->size].symbol = &symtab->symbol[i];
 			s->tab[s->size].name = symtab->strtab + symtab->symbol[i].st_name;
+			// ft_printf("%s\n", s->tab[s->size].name);
 			s->size++;
 		}
 	}
