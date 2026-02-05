@@ -103,7 +103,7 @@ int	symbol_to_print_32(t_symbol32 *symbol, t_elf32 *e)
 	}
 	if (e->bonus->g)
 	{
-		if (symbol->symbol->st_shndx == SHN_UNDEF && symbol->name && symbol->name[0] || ELF32_ST_BIND(symbol->symbol->st_info) == STB_GLOBAL)
+		if (symbol->symbol->st_shndx == SHN_UNDEF && symbol->name && symbol->name[0] || ELF32_ST_BIND(symbol->symbol->st_info) == STB_GLOBAL || ELF32_ST_BIND(symbol->symbol->st_info) == STB_WEAK)
 			return (1);
 		return (0);
 	}
