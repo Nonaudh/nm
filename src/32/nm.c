@@ -27,30 +27,6 @@ int	safe_exit_32(t_elf32 *e)
 	return (1);
 }
 
-int	print_dynsym_32(t_elf32 *e)
-{
-	Elf32_Shdr	*symtabHeader = get_section_header_by_name_32(e, "dynsym");
-	if (!symtabHeader)
-		return (1);
-	int size = symtabHeader->sh_size / symtabHeader->sh_entsize;
-
-	Elf32_Sym * symbol = (Elf32_Sym *)get_section_by_header_32(e, symtabHeader);
-	if (!symbol)
-		return (1);
-
-	char *strtab = get_section_by_name_32(e, "dynstr");
-	if (!strtab)
-		return (1);
-
-	ft_printf("===============\n");
-	for (int i = 0; i < size; i++)
-	{
-		ft_printf("%s\n", symbol[i].st_name + strtab);
-	}
-	ft_printf("===============\n");
-	return (1);
-}
-
 int	fill_symbol_struct_32(t_symbol_part32 *symtab, t_elf32 *e)
 {
 	Elf32_Shdr	*symtabHeader = get_section_header_by_name_32(e, "symtab");
@@ -65,15 +41,6 @@ int	fill_symbol_struct_32(t_symbol_part32 *symtab, t_elf32 *e)
 	symtab->strtab = get_section_by_name_32(e, "strtab");
 	if (!symtab->strtab)
 		return (1);
-
-	// ft_printf("===============\n");
-	// for (int i = 0; i < symtab->size; i++)
-	// {
-	// 	ft_printf("%s\n", symtab->symbol[i].st_name + symtab->strtab);
-	// }
-	// ft_printf("===============\n");	
-
-	// print_dynsym_32(e);
 	return (0);
 }
 
@@ -107,9 +74,6 @@ int	init_elf_32(t_elf32 *e, char *filename)
 		close (fd);
 		return (1);
 	}
-
-	// e->page_size = getpagesize();
-
 	e->file_map = get_file_in_a_map_32(fd, e->file_size);
 	if (!e->file_map)
 	{
@@ -128,7 +92,6 @@ int	init_elf_32(t_elf32 *e, char *filename)
 	e->shstrtab = get_section_by_header_32(e, &e->sectionsHeader[e->elf_header->e_shstrndx]);
 	if (!e->shstrtab)
 		return (1);
-
 	return (0);
 }
 

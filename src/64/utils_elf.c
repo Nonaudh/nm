@@ -52,7 +52,6 @@ char	*get_section_by_name_64(t_elf64 *e, const char *name)
 	}
 	if (i == e->elf_header->e_shnum)
 	{
-		// printf("Section not found : %s\n", name);
 		return (NULL);
 	}
 	ptr = get_section_by_header_64(e, &e->sectionsHeader[i]);
@@ -72,7 +71,6 @@ Elf64_Shdr	*get_section_header_by_name_64(t_elf64 *e, const char *name)
 	}
 	if (i == e->elf_header->e_shnum)
 	{
-		// printf("Section Header not found : %s\n", name);
 		return (NULL);
 	}
 	return (&e->sectionsHeader[i]);

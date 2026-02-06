@@ -101,6 +101,18 @@ int	is_an_option(char *str, t_bonus *bonus)
 	return (0);
 }
 
+int	more_than_one_file(int argc, char **argv)
+{
+	int num = 0;
+
+	for (int i = 1; i < argc && num <= 1; i++)
+	{
+		if (argv[i] && ft_strchr(argv[i], '-') != argv[i])
+			num++;
+	}
+	return(num - 1);
+}
+
 int main(int argc, char **argv)
 {
 	if (argc < 1)
@@ -126,8 +138,7 @@ int main(int argc, char **argv)
 	{
 		if (argv[i] && ft_strchr(argv[i], '-') != argv[i])
 		{
-			if (i != argc - 1)
-				multiple_file = 1;
+			multiple_file = more_than_one_file(argc, argv);
 			elf_class = find_class(argv[i]);
 			if (elf_class == ELFCLASS64)
 			{

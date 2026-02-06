@@ -63,6 +63,5 @@ copy :
 	cp inc/nm64.h inc/nm32.h
 	sed -i "s/64/32/g" src/32/*
 	sed -i "s/64/32/g" inc/nm32.h
-	sed -i "s/%016lx/%08x/g" src/32/print.c
 
 .PHONY: all clean fclean re

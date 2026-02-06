@@ -6,6 +6,11 @@ char	define_symbol_type_64(Elf64_Sym *symtab, t_elf64 *e, char *name)
 	int	type = ELF64_ST_TYPE(symtab->st_info);
 	char c = 0;
 
+	if (type == STT_GNU_IFUNC)
+    {
+        return ('i');
+    }
+
 	if (symtab->st_shndx == SHN_UNDEF && (name && name[0]))
 	{
 		if (bind != STB_WEAK)
@@ -94,7 +99,6 @@ void print_symbol_line_64(Elf64_Sym *symtab, char *name,  t_elf64 *e)
 
 int	symbol_to_print_64(t_symbol64 *symbol, t_elf64 *e)
 {
-	// return (1);
 	if (e->bonus->u)
 	{
 		if (symbol->symbol->st_shndx == SHN_UNDEF && symbol->name && symbol->name[0])
@@ -111,8 +115,6 @@ int	symbol_to_print_64(t_symbol64 *symbol, t_elf64 *e)
 		return (1);
 	if (ELF64_ST_TYPE(symbol->symbol->st_info) != STT_FILE && ELF64_ST_TYPE(symbol->symbol->st_info) != STT_SECTION && symbol->name && symbol->name[0])
 		return (1);
-	// if ((symbol->symbol->st_shndx != SHN_ABS || ELF64_ST_BIND(symbol->symbol->st_info) == STB_GLOBAL) && symbol->name && symbol->name[0])
-	// 	return (1);
 	return (0);
 }
 

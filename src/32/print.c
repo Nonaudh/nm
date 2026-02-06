@@ -6,6 +6,11 @@ char	define_symbol_type_32(Elf32_Sym *symtab, t_elf32 *e, char *name)
 	int	type = ELF32_ST_TYPE(symtab->st_info);
 	char c = 0;
 
+	if (type == STT_GNU_IFUNC)
+    {
+        return ('i');
+    }
+
 	if (symtab->st_shndx == SHN_UNDEF && (name && name[0]))
 	{
 		if (bind != STB_WEAK)
@@ -94,7 +99,6 @@ void print_symbol_line_32(Elf32_Sym *symtab, char *name,  t_elf32 *e)
 
 int	symbol_to_print_32(t_symbol32 *symbol, t_elf32 *e)
 {
-	// return (1);
 	if (e->bonus->u)
 	{
 		if (symbol->symbol->st_shndx == SHN_UNDEF && symbol->name && symbol->name[0])
@@ -111,8 +115,6 @@ int	symbol_to_print_32(t_symbol32 *symbol, t_elf32 *e)
 		return (1);
 	if (ELF32_ST_TYPE(symbol->symbol->st_info) != STT_FILE && ELF32_ST_TYPE(symbol->symbol->st_info) != STT_SECTION && symbol->name && symbol->name[0])
 		return (1);
-	// if ((symbol->symbol->st_shndx != SHN_ABS || ELF32_ST_BIND(symbol->symbol->st_info) == STB_GLOBAL) && symbol->name && symbol->name[0])
-	// 	return (1);
 	return (0);
 }
 
