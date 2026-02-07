@@ -53,7 +53,7 @@ char	define_symbol_type_32(Elf32_Sym *symtab, t_elf32 *e, char *name)
 		else
 			return ('D');
 	}
-	return ('?');
+	return ('N');
 }
 
 void	print_local_or_global_32(char c, Elf32_Sym *symtab)

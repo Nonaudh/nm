@@ -53,7 +53,7 @@ char	define_symbol_type_64(Elf64_Sym *symtab, t_elf64 *e, char *name)
 		else
 			return ('D');
 	}
-	return ('?');
+	return ('N');
 }
 
 void	print_local_or_global_64(char c, Elf64_Sym *symtab)

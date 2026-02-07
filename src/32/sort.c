@@ -55,6 +55,24 @@ int	ft_strcmp_tolower_isalnum_32(char *s1, char *s2)
 	return (ft_tolower(s1[i]) - ft_tolower(s2[k]));
 }
 
+int	ft_strcmp_isalnum_32(char *s1, char *s2)
+{
+	int i = 0, k = 0;
+
+	while (s1[i] && s2[k])
+	{
+		while (s1[i] && !ft_isalnum(s1[i]))
+			i++;
+		while (s2[k] && !ft_isalnum(s2[k]))
+			k++;
+
+		if (s1[i] != s2[k] || !s1[i] || !s2[k])
+			break ;
+		i++;
+		k++;
+	}
+	return (s1[i] - s2[k]);
+}
 
 int	ft_strcmp_underscore_32(char *tab_ouret, char *tab_leau)
 {
@@ -65,14 +83,18 @@ int	ft_strcmp_underscore_32(char *tab_ouret, char *tab_leau)
 
 	if (result == 0)
 	{
-		int max = ft_strlen(tab_ouret) > ft_strlen(tab_leau) ? ft_strlen(tab_ouret) : ft_strlen(tab_leau);
-		result = ft_strncmp(tab_ouret, tab_leau, max);
+		// result = ft_strcmp_isalnum_32(tab_ouret, tab_leau);
+		// if (result == 0)
+		// {
+		// 	// ft_printf("%s   %s\n", tab_ouret, tab_leau);
+			int max = ft_strlen(tab_ouret) > ft_strlen(tab_leau) ? ft_strlen(tab_ouret) : ft_strlen(tab_leau);
+			result = ft_strncmp(tab_ouret, tab_leau, max);
+		// }
 	}
-
 	return (result);
 }
 
-void	selectSort_32(t_symbol32 *tab, size_t size, int bonus_r)
+void	bubbleSort_32(t_symbol32 *tab, size_t size, int bonus_r)
 {
 	int j, k;
 	int	changes = 1;
@@ -115,11 +137,22 @@ int	unique_symbol_32(char *name, t_symbol_container32 *s)
 	return (0);
 }
 
-int	not_second_blank_32(char *name, int i)
+int	not_second_blank_32(Elf32_Sym *symbol, char *strtab, int i)
 {
-	if (name && !name[0] && i != 0)
+	char *name = symbol->st_name + strtab;
+	if (ELF32_ST_TYPE(symbol->st_info) != STT_SECTION && name && !name[0] && i != 0)
 		return (0);
 	return (1);
+}
+
+void	mystery_symbol_32(Elf32_Sym *symbol, t_elf32 *e)
+{
+	if (ELF32_ST_TYPE(symbol->st_info) == STT_SECTION)
+	{
+		ft_printf("mystry %s\n", e->shstrtab + e->sectionsHeader[symbol->st_shndx].sh_name);
+	}
+	else
+		ft_printf("NOP\n");
 }
 
 t_symbol_container32	*erase_duplicate_symbol_32(t_symbol_part32 *symtab, t_elf32 *e)
@@ -138,10 +171,15 @@ t_symbol_container32	*erase_duplicate_symbol_32(t_symbol_part32 *symtab, t_elf32
 	
 	for (i = 0; i < symtab->size; i++)
 	{
-		if (not_second_blank_32(symtab->strtab + symtab->symbol[i].st_name, i))
+		if (not_second_blank_32(&symtab->symbol[i], symtab->strtab, i))
 		{
 			s->tab[s->size].symbol = &symtab->symbol[i];
-			s->tab[s->size].name = symtab->strtab + symtab->symbol[i].st_name;
+			if (ELF32_ST_TYPE(symtab->symbol[i].st_info) != STT_SECTION)
+				s->tab[s->size].name = symtab->strtab + symtab->symbol[i].st_name;
+			else
+			{
+				s->tab[s->size].name = e->shstrtab + e->sectionsHeader[symtab->symbol[i].st_shndx].sh_name;
+			}
 			s->size++;
 		}
 	}
@@ -156,7 +194,7 @@ int	print_symbols_32(t_symbol_part32 *symtab, t_elf32 *e, int multiple_file)
 		return (1);
 
 	if (!e->bonus->p)
-		selectSort_32(s->tab, s->size, e->bonus->r);
+		bubbleSort_32(s->tab, s->size, e->bonus->r);
 	if (multiple_file)
 		ft_printf("\n%s:\n", e->filename);
 	print_all_symbols_32(s, e);
