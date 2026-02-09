@@ -51,6 +51,7 @@ int	ft_strcmp_tolower_isalnum_32(char *s1, char *s2)
 			break ;
 		i++;
 		k++;
+
 	}
 	return (ft_tolower(s1[i]) - ft_tolower(s2[k]));
 }
@@ -74,23 +75,27 @@ int	ft_strcmp_isalnum_32(char *s1, char *s2)
 	return (s1[i] - s2[k]);
 }
 
-int	ft_strcmp_underscore_32(char *tab_ouret, char *tab_leau)
+int	ft_strcmp_underscore_32(t_symbol32 *symb_ouret, t_symbol32 *symb_leau)
 {
+	char	*tab_ouret = symb_ouret->name;
+	char *tab_leau = symb_leau->name;
+
 	if (!tab_leau || !tab_ouret)
 		return (0);
 
 	int result = ft_strcmp_tolower_isalnum_32(tab_ouret, tab_leau);
+	if (result)
+		return (result);
 
-	if (result == 0)
-	{
-		// result = ft_strcmp_isalnum_32(tab_ouret, tab_leau);
-		// if (result == 0)
-		// {
-		// 	// ft_printf("%s   %s\n", tab_ouret, tab_leau);
-			int max = ft_strlen(tab_ouret) > ft_strlen(tab_leau) ? ft_strlen(tab_ouret) : ft_strlen(tab_leau);
-			result = ft_strncmp(tab_ouret, tab_leau, max);
-		// }
-	}
+	result = ft_strcmp_isalnum_32(tab_ouret, tab_leau);
+	if (result)
+		return (result);
+	
+	// if (tab_ouret[0] == '.' && tab_leau[0] != '.')
+	// 	return (-1);
+
+	int max = ft_strlen(tab_ouret) > ft_strlen(tab_leau) ? ft_strlen(tab_ouret) : ft_strlen(tab_leau);
+	result = ft_strncmp(tab_ouret, tab_leau, max);
 	return (result);
 }
 
@@ -104,13 +109,13 @@ void	bubbleSort_32(t_symbol32 *tab, size_t size, int bonus_r)
 		changes = 0;
 		for (k = 0; k < size - 1; k++)
 		{
-			if (!bonus_r && (ft_strcmp_underscore_32(tab[k].name, tab[k + 1].name) > 0))
+			if (!bonus_r && (ft_strcmp_underscore_32(&tab[k], &tab[k + 1]) > 0))
 			{
 				ft_swap_32(&tab[k], &tab[k + 1]);
 				changes = 1;
 			}
 			
-			else if (bonus_r && ft_strcmp_underscore_32(tab[k].name, tab[k + 1].name) < 0)
+			else if (bonus_r && ft_strcmp_underscore_32(&tab[k], &tab[k + 1]) < 0)
 			{
 				ft_swap_32(&tab[k], &tab[k + 1]);
 				changes = 1;
@@ -145,16 +150,6 @@ int	not_second_blank_32(Elf32_Sym *symbol, char *strtab, int i)
 	return (1);
 }
 
-void	mystery_symbol_32(Elf32_Sym *symbol, t_elf32 *e)
-{
-	if (ELF32_ST_TYPE(symbol->st_info) == STT_SECTION)
-	{
-		ft_printf("mystry %s\n", e->shstrtab + e->sectionsHeader[symbol->st_shndx].sh_name);
-	}
-	else
-		ft_printf("NOP\n");
-}
-
 t_symbol_container32	*erase_duplicate_symbol_32(t_symbol_part32 *symtab, t_elf32 *e)
 {
 	int i;
@@ -169,9 +164,9 @@ t_symbol_container32	*erase_duplicate_symbol_32(t_symbol_part32 *symtab, t_elf32
 		return (NULL);
 	}
 	
-	for (i = 0; i < symtab->size; i++)
+	for (i = 1; i < symtab->size; i++)
 	{
-		if (not_second_blank_32(&symtab->symbol[i], symtab->strtab, i))
+		if (1 || not_second_blank_32(&symtab->symbol[i], symtab->strtab, i))
 		{
 			s->tab[s->size].symbol = &symtab->symbol[i];
 			if (ELF32_ST_TYPE(symtab->symbol[i].st_info) != STT_SECTION)

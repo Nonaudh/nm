@@ -10,7 +10,6 @@ char	define_symbol_type_64(Elf64_Sym *symtab, t_elf64 *e, char *name)
     {
         return ('i');
     }
-
 	if (symtab->st_shndx == SHN_UNDEF && (name && name[0]))
 	{
 		if (bind != STB_WEAK)
@@ -53,12 +52,19 @@ char	define_symbol_type_64(Elf64_Sym *symtab, t_elf64 *e, char *name)
 		else
 			return ('D');
 	}
-	return ('N');
+	if (type == STT_SECTION)
+	{
+		if (!ft_strncmp(e->shstrtab + shdr->sh_name, ".debug", 6))
+			return ('N');
+		return ('n');
+	}
+	return ('?');
 }
 
 void	print_local_or_global_64(char c, Elf64_Sym *symtab)
 {
-	if (c != 'U' && c != 'W' && c != 'V' && ELF64_ST_BIND(symtab->st_info) == STB_LOCAL)
+	if (c != 'U' && c != 'W' && c != 'V' && c != 'N'
+		&& ELF64_ST_BIND(symtab->st_info) == STB_LOCAL)
 		c = ft_tolower(c);
 	ft_printf(" %c ", c);
 }
