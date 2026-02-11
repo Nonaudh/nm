@@ -3,14 +3,7 @@
 
 #include <elf.h>
 #include "libft.h"
-#include "bonus.h"
-
-typedef struct s_symbol_part32
-{
-	Elf32_Sym	*symbol;
-	char	*strtab;
-	int	size;
-} t_symbol_part32;
+#include "shared.h"
 
 typedef struct s_symbol32
 {
@@ -26,6 +19,8 @@ typedef struct s_symbol_container32
 
 } t_symbol_container32;
 
+struct t_bonus;
+
 typedef struct s_elf32
 {
 	char *filename;
@@ -37,7 +32,9 @@ typedef struct s_elf32
 	t_bonus *bonus;
 } t_elf32;
 
-int	print_symbols_32(t_symbol_part32 *symtab, t_elf32 *e, int multiple_file);
+int	sort_and_print_symbols_32(t_symbol_container32 *s, t_elf32 *e, int multiple_file);
+
+int	ft_strcmp_underscore_32(t_symbol32 *symb_ouret, t_symbol32 *symb_leau);
 
 void	*get_file_in_a_map_32(int fd, int page_size);
 Elf32_Ehdr	*get_elf_header_32(t_elf32 *e);

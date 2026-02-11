@@ -14,20 +14,21 @@ CC = cc
 
 CFLAGS = -g #-Werror -Wextra -Wall
 
-INCLUDE = -Iinc -Ilib/libft
+DLIB = lib/libft
 
-LIBRARIES = -Llib/libft -lft
+INCLUDE = -Iinc -I$(DLIB)
 
-DSRC64 = src/64/
+LIBRARIES = -L$(DLIB) -lft
 
-DSRC32 = src/32/
+DSRC64 = src/64
+DSRC32 = src/32
+DSRCSHARED = src/shared
 
-DLIB = lib/libft/
+LIB = $(DLIB)/libft.a
 
-LIB = $(DLIB)libft.a
-
-SRC = src/main.c $(DSRC64)nm.c $(DSRC64)sort.c $(DSRC64)utils_elf.c $(DSRC64)print.c \
-					$(DSRC32)nm.c $(DSRC32)sort.c $(DSRC32)utils_elf.c $(DSRC32)print.c
+SRC = src/main.c $(DSRC64)/nm.c $(DSRC64)/sort.c $(DSRC64)/utils_elf.c $(DSRC64)/print.c \
+					$(DSRC32)/nm.c $(DSRC32)/sort.c $(DSRC32)/utils_elf.c $(DSRC32)/print.c \
+					$(DSRCSHARED)/utils.c
 
 NAME = ft_nm
 

@@ -21,3 +21,18 @@
 	--no-sort
 		Do not bother to sort the symbols in any order; print them in
 		the order encountered.
+
+
+nm :
+	
+0008a850 d DW.ref.__gxx_personality_v0
+0008901c d .dynamic
+0008901c d _DYNAMIC
+U __dynamic_cast@@CXXABI_1.3
+
+080494bd t execute_stack_op.cold
+0806e470 T _exit
+080511c0 T exit
+0806e470 W _Exit
+080ef084 D __exit_funcs
+

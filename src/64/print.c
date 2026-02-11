@@ -14,7 +14,6 @@ char	define_symbol_type_64(Elf64_Sym *symtab, t_elf64 *e, char *name)
 	{
 		if (bind != STB_WEAK)
 			return ('U');
-		// return ('U');
 	}
 
 	if (symtab->st_shndx == SHN_ABS || (name && !name[0]))

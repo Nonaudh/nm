@@ -27,33 +27,47 @@ int	safe_exit_32(t_elf32 *e)
 	return (1);
 }
 
-int	fill_symbol_struct_32(t_symbol_part32 *symtab, t_elf32 *e)
+t_symbol_container32	*fill_container_32(t_elf32 *e)
 {
-	Elf32_Shdr	*symtabHeader = get_section_header_by_name_32(e, "symtab");
+	int i;
+	t_symbol_container32	*s;
+	Elf32_Shdr	*symtabHeader;
+	int symtab_size;
+	Elf32_Sym	*symtab;
+	char	*strtab;
+
+	s = malloc(sizeof(t_symbol_container32));
+	if (!s)
+		return (NULL);
+	symtabHeader = get_section_header_by_name_32(e, "symtab");
 	if (!symtabHeader)
-		return (1);
-	symtab->size = symtabHeader->sh_size / symtabHeader->sh_entsize;
+		return (NULL);
+	symtab_size = symtabHeader->sh_size / symtabHeader->sh_entsize;
+	symtab = (Elf32_Sym *)get_section_by_header_32(e, symtabHeader);
+	if (!symtab)
+		return (NULL);
+	strtab = get_section_by_name_32(e, "strtab");
+	if (!strtab)
+		return (NULL);
 
-	symtab->symbol = (Elf32_Sym *)get_section_by_header_32(e, symtabHeader);
-	if (!symtab->symbol)
-		return (1);
-
-	symtab->strtab = get_section_by_name_32(e, "strtab");
-	if (!symtab->strtab)
-		return (1);
-	return (0);
-}
-
-int	list_symbols_32(t_elf32 *e, int multiple_file)
-{
-	t_symbol_part32	symtab;
-
-	if (fill_symbol_struct_32(&symtab, e))
-		return (1);
-
-	print_symbols_32(&symtab, e, multiple_file);
-
-	return (0);
+	s->size = 0;
+	s->tab = malloc((symtab_size) * sizeof(t_symbol32));
+	if (!s->tab)
+	{
+		free(s);
+		return (NULL);
+	}
+	
+	for (i = 1; i < symtab_size; i++)
+	{
+		s->tab[s->size].symbol = &symtab[i];
+		if (ELF32_ST_TYPE(symtab[i].st_info) != STT_SECTION)
+			s->tab[s->size].name = strtab + symtab[i].st_name;
+		else
+			s->tab[s->size].name = e->shstrtab + e->sectionsHeader[symtab[i].st_shndx].sh_name;
+		s->size++;
+	}
+	return (s);
 }
 
 int	init_elf_32(t_elf32 *e, char *filename)
@@ -95,17 +109,20 @@ int	init_elf_32(t_elf32 *e, char *filename)
 	return (0);
 }
 
-
 int nm32(char *filename, t_bonus *bonus, int multiple_file)
 {
 	t_elf32	e;
+	t_symbol_container32 *s;
 
 	if (init_elf_32(&e, filename))
 		return (safe_exit_32(&e));
 	e.bonus = bonus;
 
-	if (list_symbols_32(&e, multiple_file))
+	s = fill_container_32(&e);
+	if (!s)
 		ft_dprintf(2, "nm: %s: no symbols\n", filename);
+	
+	sort_and_print_symbols_32(s, &e, multiple_file);
 
 	safe_exit_32(&e);
 

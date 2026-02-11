@@ -3,14 +3,7 @@
 
 #include <elf.h>
 #include "libft.h"
-#include "bonus.h"
-
-typedef struct s_symbol_part64
-{
-	Elf64_Sym	*symbol;
-	char	*strtab;
-	int	size;
-} t_symbol_part64;
+#include "shared.h"
 
 typedef struct s_symbol64
 {
@@ -26,6 +19,8 @@ typedef struct s_symbol_container64
 
 } t_symbol_container64;
 
+struct t_bonus;
+
 typedef struct s_elf64
 {
 	char *filename;
@@ -37,7 +32,9 @@ typedef struct s_elf64
 	t_bonus *bonus;
 } t_elf64;
 
-int	print_symbols_64(t_symbol_part64 *symtab, t_elf64 *e, int multiple_file);
+int	sort_and_print_symbols_64(t_symbol_container64 *s, t_elf64 *e, int multiple_file);
+
+int	ft_strcmp_underscore_64(t_symbol64 *symb_ouret, t_symbol64 *symb_leau);
 
 void	*get_file_in_a_map_64(int fd, int page_size);
 Elf64_Ehdr	*get_elf_header_64(t_elf64 *e);
