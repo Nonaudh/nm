@@ -45,6 +45,6 @@ char	*get_section_by_name_32(t_elf32 *e, const char *name);
 Elf32_Shdr	*get_section_header_by_name_32(t_elf32 *e, const char *name);
 
 void	print_all_symbols_32(t_symbol_container32 *s, t_elf32 *e);
-int nm32(char *filename, t_bonus *bonus, int multiple_file);
+int nm32(char *filename, t_bonus *bonus, int *multiple_file);
 
 #endif

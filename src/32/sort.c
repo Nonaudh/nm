@@ -56,11 +56,11 @@ void	bubbleSort_32(t_symbol32 *tab, size_t size, int bonus_r)
 	}
 }
 
-int	sort_and_print_symbols_32(t_symbol_container32 *s, t_elf32 *e, int multiple_file)
+int	sort_and_print_symbols_32(t_symbol_container32 *s, t_elf32 *e, int file_nb)
 {
 	if (!e->bonus->p)
 		bubbleSort_32(s->tab, s->size, e->bonus->r);
-	if (multiple_file)
+	if (file_nb > 1)
 		ft_printf("\n%s:\n", e->filename);
 	print_all_symbols_32(s, e);
 	free(s->tab);

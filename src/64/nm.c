@@ -109,7 +109,7 @@ int	init_elf_64(t_elf64 *e, char *filename)
 	return (0);
 }
 
-int nm64(char *filename, t_bonus *bonus, int multiple_file)
+int nm64(char *filename, t_bonus *bonus, int *file_nb)
 {
 	t_elf64	e;
 	t_symbol_container64 *s;
@@ -122,7 +122,10 @@ int nm64(char *filename, t_bonus *bonus, int multiple_file)
 	if (!s)
 		ft_dprintf(2, "nm: %s: no symbols\n", filename);
 	
-	sort_and_print_symbols_64(s, &e, multiple_file);
+	sort_and_print_symbols_64(s, &e, *file_nb);
+
+	if (!(*file_nb))
+		*file_nb = 1;
 
 	safe_exit_64(&e);
 

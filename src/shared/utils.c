@@ -101,16 +101,16 @@ int	is_an_option(char *str, t_bonus *bonus)
 	return (0);
 }
 
-int	more_than_one_file(int argc, char **argv)
+int	number_of_files(int argc, char **argv)
 {
 	int num = 0;
 
-	for (int i = 1; i < argc && num <= 1; i++)
+	for (int i = 1; i < argc; i++)
 	{
 		if (argv[i] && ft_strchr(argv[i], '-') != argv[i])
 			num++;
 	}
-	return(num - 1);
+	return (num);
 }
 
 int	ft_strcmp_tolower_isalnum(char *s1, char *s2)

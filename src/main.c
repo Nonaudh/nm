@@ -15,9 +15,9 @@ int main(int argc, char **argv)
 	ft_bzero(&bonus, sizeof(t_bonus));
 	int elf_class;
 	int i;
-	int	multiple_file = 0;
+	int	files_nb = 0;
 	int return_value = 0;
-	char *file = NULL; // to re-do
+	char	*filename;
 
 	for (i = 1; i < argc; i++)
 	{
@@ -26,24 +26,27 @@ int main(int argc, char **argv)
 			if (is_an_option(argv[i], &bonus))
 				return (1);
 		}
-		else
-			file = (void *)1;
 	}
 
-	for (i = 1; i < argc; i++)
+	files_nb = number_of_files(argc, argv);
+
+	for (i = 1; i < argc || !files_nb; i++)
 	{
-		if (argv[i] && ft_strchr(argv[i], '-') != argv[i])
+		if (argv[i] && ft_strchr(argv[i], '-') != argv[i] || files_nb == 0)
 		{
-			multiple_file = more_than_one_file(argc, argv);
-			elf_class = find_class(argv[i]);
+			if (!files_nb)
+				filename = "a.out";
+			else
+				filename = argv[i];
+			elf_class = find_class(filename);
 			if (elf_class == ELFCLASS64)
 			{
-				if (nm64(argv[i], &bonus, multiple_file))
+				if (nm64(filename, &bonus, &files_nb))
 					return_value = 1;
 			}
 			else if (elf_class == ELFCLASS32)
 			{
-				if (nm32(argv[i], &bonus, multiple_file))
+				if (nm32(filename, &bonus, &files_nb))
 					return_value = 1;
 			}
 			else

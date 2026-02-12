@@ -45,6 +45,6 @@ char	*get_section_by_name_64(t_elf64 *e, const char *name);
 Elf64_Shdr	*get_section_header_by_name_64(t_elf64 *e, const char *name);
 
 void	print_all_symbols_64(t_symbol_container64 *s, t_elf64 *e);
-int nm64(char *filename, t_bonus *bonus, int multiple_file);
+int nm64(char *filename, t_bonus *bonus, int *multiple_file);
 
 #endif
