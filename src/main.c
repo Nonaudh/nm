@@ -32,26 +32,25 @@ int main(int argc, char **argv)
 
 	for (i = 1; i < argc || !files_nb; i++)
 	{
-		if (argv[i] && ft_strchr(argv[i], '-') != argv[i] || files_nb == 0)
+		if ((argv[i] && ft_strchr(argv[i], '-') != argv[i]) || !files_nb)
 		{
-			if (!files_nb)
-				filename = "a.out";
-			else
-				filename = argv[i];
+			filename = files_nb ? argv[i] : "a.out";
 			elf_class = find_class(filename);
 			if (elf_class == ELFCLASS64)
 			{
-				if (nm64(filename, &bonus, &files_nb))
+				if (nm64(filename, &bonus, files_nb))
 					return_value = 1;
 			}
 			else if (elf_class == ELFCLASS32)
 			{
-				if (nm32(filename, &bonus, &files_nb))
+				if (nm32(filename, &bonus, files_nb))
 					return_value = 1;
 			}
 			else
 				return_value = 1;
 		}
+		if (!files_nb)
+			files_nb = -1;
 	}
 	return (return_value);
 }

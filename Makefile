@@ -12,7 +12,7 @@
 
 CC = cc
 
-CFLAGS = -g #-Werror -Wextra -Wall
+CFLAGS = -g -Werror -Wextra -Wall
 
 DLIB = lib/libft
 
@@ -32,7 +32,7 @@ SRC = src/main.c $(DSRC64)/nm.c $(DSRC64)/sort.c $(DSRC64)/utils_elf.c $(DSRC64)
 
 NAME = ft_nm
 
-all : copy $(NAME)
+all : $(NAME)
 
 DBUILD = build/
 

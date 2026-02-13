@@ -6,24 +6,26 @@
 #include <sys/stat.h>
 #include <stdio.h>
 
-int	size_of_file_64(int fd, char *filename)
+long	size_of_file_64(int fd, char *filename)
 {
 	struct stat stat;
 
 	if (fstat(fd, &stat))
 		return (-1);
-	if (stat.st_size < sizeof(Elf64_Ehdr))
+	if (stat.st_size < (long)sizeof(Elf64_Ehdr))
 	{
-		ft_dprintf(2, "ft_nm: %s: file format not recognized\n", filename);
+		ft_dprintf(2, "nm: %s: file format not recognized\n", filename);
 		return (-1);
 	}
 	return (stat.st_size);
 }
 
-int	safe_exit_64(t_elf64 *e)
+int	safe_exit_64(t_elf64 *e, t_symbol_container64 *s)
 {	
 	if (e->file_map)
 		munmap(e->file_map, e->file_size);
+	if (s)
+		free(s);
 	return (1);
 }
 
@@ -53,10 +55,7 @@ t_symbol_container64	*fill_container_64(t_elf64 *e)
 	s->size = 0;
 	s->tab = malloc((symtab_size) * sizeof(t_symbol64));
 	if (!s->tab)
-	{
-		free(s);
 		return (NULL);
-	}
 	
 	for (i = 1; i < symtab_size; i++)
 	{
@@ -109,25 +108,22 @@ int	init_elf_64(t_elf64 *e, char *filename)
 	return (0);
 }
 
-int nm64(char *filename, t_bonus *bonus, int *file_nb)
+int nm64(char *filename, t_bonus *bonus, int files_nb)
 {
 	t_elf64	e;
-	t_symbol_container64 *s;
+	t_symbol_container64 *s = NULL;
 
 	if (init_elf_64(&e, filename))
-		return (safe_exit_64(&e));
+		return (safe_exit_64(&e, s));
 	e.bonus = bonus;
 
 	s = fill_container_64(&e);
 	if (!s)
 		ft_dprintf(2, "nm: %s: no symbols\n", filename);
-	
-	sort_and_print_symbols_64(s, &e, *file_nb);
+	else
+		sort_and_print_symbols_64(s, &e, files_nb);
 
-	if (!(*file_nb))
-		*file_nb = 1;
-
-	safe_exit_64(&e);
+	safe_exit_64(&e, s);
 
 	return (0);
 }

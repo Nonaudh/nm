@@ -15,7 +15,7 @@ typedef struct s_symbol64
 typedef struct s_symbol_container64
 {
 	t_symbol64 *tab;
-	size_t size;
+	int	size;
 
 } t_symbol_container64;
 
@@ -24,7 +24,7 @@ struct t_bonus;
 typedef struct s_elf64
 {
 	char *filename;
-	int	file_size;
+	long	file_size;
 	void	*file_map;
 	Elf64_Ehdr	*elf_header;
 	Elf64_Shdr	*sectionsHeader;
@@ -45,6 +45,6 @@ char	*get_section_by_name_64(t_elf64 *e, const char *name);
 Elf64_Shdr	*get_section_header_by_name_64(t_elf64 *e, const char *name);
 
 void	print_all_symbols_64(t_symbol_container64 *s, t_elf64 *e);
-int nm64(char *filename, t_bonus *bonus, int *multiple_file);
+int nm64(char *filename, t_bonus *bonus, int files_nb);
 
 #endif

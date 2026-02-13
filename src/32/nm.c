@@ -6,24 +6,26 @@
 #include <sys/stat.h>
 #include <stdio.h>
 
-int	size_of_file_32(int fd, char *filename)
+long	size_of_file_32(int fd, char *filename)
 {
 	struct stat stat;
 
 	if (fstat(fd, &stat))
 		return (-1);
-	if (stat.st_size < sizeof(Elf32_Ehdr))
+	if (stat.st_size < (long)sizeof(Elf32_Ehdr))
 	{
-		ft_dprintf(2, "ft_nm: %s: file format not recognized\n", filename);
+		ft_dprintf(2, "nm: %s: file format not recognized\n", filename);
 		return (-1);
 	}
 	return (stat.st_size);
 }
 
-int	safe_exit_32(t_elf32 *e)
+int	safe_exit_32(t_elf32 *e, t_symbol_container32 *s)
 {	
 	if (e->file_map)
 		munmap(e->file_map, e->file_size);
+	if (s)
+		free(s);
 	return (1);
 }
 
@@ -53,10 +55,7 @@ t_symbol_container32	*fill_container_32(t_elf32 *e)
 	s->size = 0;
 	s->tab = malloc((symtab_size) * sizeof(t_symbol32));
 	if (!s->tab)
-	{
-		free(s);
 		return (NULL);
-	}
 	
 	for (i = 1; i < symtab_size; i++)
 	{
@@ -109,25 +108,22 @@ int	init_elf_32(t_elf32 *e, char *filename)
 	return (0);
 }
 
-int nm32(char *filename, t_bonus *bonus, int *file_nb)
+int nm32(char *filename, t_bonus *bonus, int files_nb)
 {
 	t_elf32	e;
-	t_symbol_container32 *s;
+	t_symbol_container32 *s = NULL;
 
 	if (init_elf_32(&e, filename))
-		return (safe_exit_32(&e));
+		return (safe_exit_32(&e, s));
 	e.bonus = bonus;
 
 	s = fill_container_32(&e);
 	if (!s)
 		ft_dprintf(2, "nm: %s: no symbols\n", filename);
-	
-	sort_and_print_symbols_32(s, &e, *file_nb);
+	else
+		sort_and_print_symbols_32(s, &e, files_nb);
 
-	if (!(*file_nb))
-		*file_nb = 1;
-
-	safe_exit_32(&e);
+	safe_exit_32(&e, s);
 
 	return (0);
 }

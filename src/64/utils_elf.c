@@ -20,9 +20,9 @@ Elf64_Ehdr	*get_elf_header_64(t_elf64 *e)
 
 Elf64_Shdr	*get_sections_header_64(t_elf64 *e)
 {
-	if (e->elf_header->e_shoff + (e->elf_header->e_shnum * sizeof(Elf64_Shdr)) > e->file_size)
+	if (e->elf_header->e_shoff + (e->elf_header->e_shnum * sizeof(Elf64_Shdr)) > (unsigned long)e->file_size)
 	{
-		ft_dprintf(2, "ft_nm: %s: file format not recognized\n", e->filename);
+		ft_dprintf(2, "nm: %s: file format not recognized\n", e->filename);
 		return (NULL);
 	}
 	return (e->file_map + e->elf_header->e_shoff);
@@ -30,7 +30,7 @@ Elf64_Shdr	*get_sections_header_64(t_elf64 *e)
 
 char	*get_section_by_header_64(t_elf64 *e, Elf64_Shdr *sectionHeader)
 {
-	if (!sectionHeader || sectionHeader->sh_offset + sizeof(Elf64_Shdr) > e->file_size)
+	if (!sectionHeader || sectionHeader->sh_offset + sizeof(Elf64_Shdr) > (unsigned long)e->file_size)
 		return (NULL);
 
 	char *ptr = e->file_map + sectionHeader->sh_offset;

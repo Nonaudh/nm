@@ -4,7 +4,6 @@ char	define_symbol_type_64(Elf64_Sym *symtab, t_elf64 *e, char *name)
 {
 	int	bind = ELF64_ST_BIND(symtab->st_info);
 	int	type = ELF64_ST_TYPE(symtab->st_info);
-	char c = 0;
 
 	if (type == STT_GNU_IFUNC)
     {
@@ -112,7 +111,9 @@ int	symbol_to_print_64(t_symbol64 *symbol, t_elf64 *e)
 	}
 	if (e->bonus->g)
 	{
-		if (symbol->symbol->st_shndx == SHN_UNDEF && symbol->name && symbol->name[0] || ELF64_ST_BIND(symbol->symbol->st_info) == STB_GLOBAL || ELF64_ST_BIND(symbol->symbol->st_info) == STB_WEAK)
+		if ((symbol->symbol->st_shndx == SHN_UNDEF && symbol->name && symbol->name[0])
+			|| ELF64_ST_BIND(symbol->symbol->st_info) == STB_GLOBAL
+			|| ELF64_ST_BIND(symbol->symbol->st_info) == STB_WEAK)
 			return (1);
 		return (0);
 	}

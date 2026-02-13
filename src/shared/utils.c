@@ -10,7 +10,7 @@ int	not_an_elf(char *map, char *filename)
 {
 	if (map[0] != 0x7f || map[1] != 'E' || map[2] != 'L' || map[3] != 'F')
 	{
-		ft_dprintf(2, "ft_nm: %s: file format not recognized\n", filename);
+		ft_dprintf(2, "nm: %s: file format not recognized\n", filename);
 		return (1);
 	}
 	return (0);
@@ -29,7 +29,7 @@ int	check_file(int fd, char *filename)
 		return (1);
 	if (stat.st_size < EI_NIDENT)
 	{
-		ft_dprintf(2, "ft_nm: %s: file format not recognized\n", filename);
+		ft_dprintf(2, "nm: %s: file format not recognized\n", filename);
 		return (1);
 	}
 	return (0);		
@@ -81,7 +81,7 @@ int	fill_option_struct(char option, t_bonus *bonus)
 			bonus->p = 1;
 			break;
 		default:
-			ft_dprintf(2, "ft_nm: invalid option '%c'\n", option);
+			ft_dprintf(2, "nm: invalid option '%c'\n", option);
 			return (1);
 	}
 	return (0);

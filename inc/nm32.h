@@ -15,7 +15,7 @@ typedef struct s_symbol32
 typedef struct s_symbol_container32
 {
 	t_symbol32 *tab;
-	size_t size;
+	int	size;
 
 } t_symbol_container32;
 
@@ -24,7 +24,7 @@ struct t_bonus;
 typedef struct s_elf32
 {
 	char *filename;
-	int	file_size;
+	long	file_size;
 	void	*file_map;
 	Elf32_Ehdr	*elf_header;
 	Elf32_Shdr	*sectionsHeader;
@@ -45,6 +45,6 @@ char	*get_section_by_name_32(t_elf32 *e, const char *name);
 Elf32_Shdr	*get_section_header_by_name_32(t_elf32 *e, const char *name);
 
 void	print_all_symbols_32(t_symbol_container32 *s, t_elf32 *e);
-int nm32(char *filename, t_bonus *bonus, int *multiple_file);
+int nm32(char *filename, t_bonus *bonus, int files_nb);
 
 #endif
